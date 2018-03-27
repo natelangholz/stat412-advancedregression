@@ -20,7 +20,7 @@ XXX Submit brief (e.g. two-page) progress report XXX Student presentations
 
 The course will not strictly follow a textbook but here are some great ones that you should all have and read. Posted readings will largely come from these books. These are great books. Seriously! Do the readings. :)
 
-* Murphy, Kevin (2012), Machine Learning: A Probabilistic Perspective. MIT Press.
+* Murphy, Kevin (2012), [Machine Learning: A Probabilistic Perspective.](https://doc.lagout.org/science/Artificial%20Intelligence/Machine%20learning/Machine%20Learning_%20A%20Probabilistic%20Perspective%20%5BMurphy%202012-08-24%5D.pdf) MIT Press.
 
 * Hastie, T., Tibshirani, R., Friedman, J. (2011), [The Elements of Statistical Learning: Data Mining, Inference, and Prediction, Second Edition.](https://web.stanford.edu/~hastie/ElemStatLearn/) Springer. ESL
 
@@ -30,7 +30,7 @@ The course will not strictly follow a textbook but here are some great ones that
 
 (http://www.stat.cmu.edu/~larry/all-of-statistics/index.html)
 
-Additional papers will be posted in the corresponding week directory.
+Additional papers will be posted in the corresponding weekly directory.
 
 ## Evaluation
 
@@ -40,7 +40,7 @@ Working on actual problems is central to learning. Four problem sets will be ass
 
 ### Final Project
 
-
+A final project will be completed in pairs. The project will encourage collaboration, test your predictive modeling skills, promote presenting skills, and encompass a bit of competition. A classroom Kaggle competition will be held on a provided dataset to test skills learned in this course. In addition, each pair will also present their work to the class during the final week of the quarter. Effective verbal communication is a critical skill for statisticians, and it requires practice and feedback to develop. Additional information about the final project will given as the course progresses. 
 
 
 
