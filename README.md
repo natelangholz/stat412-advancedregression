@@ -10,11 +10,12 @@ The class will generally emphasize depth over breadth, in the belief that if you
 
 ## Key Dates
 
-Problem set due dates will be announced when each problem set it distributed. Other important deadlines and dates during the term are: 
+Problem set due dates will be announced when each problem set it distributed. 
 
-* XXX Find partner by this date and list your group on the course website 
-* XXX Exploratory data analysis
-* XXX Submit brief (e.g. two-page) progress report
+Other important deadlines and dates during the term are: 
+
+* (TBD) Exploratory data analysis
+* (TBD) Submit brief (e.g. one-page) progress report
 * 6/4/2018 Final model submissions
 * 6/6/2018 Final slide sumbmissions
 * 6/7/2018 Student presentations (Week 10)
@@ -30,8 +31,6 @@ The course will not strictly follow a textbook but here are some great ones that
 * James, G., Witten, D., Hastie, T., Tibsharani, R. (2013), [An Introduction to Statistical Learning: with Applications in R.] (http://www-bcf.usc.edu/~gareth/ISL/) Springer. ISL
 
 * Bishop, Christopher (2007), [Pattern Recognition and Machine Learning.](http://users.isr.ist.utl.pt/~wurmd/Livros/school/Bishop%20-%20Pattern%20Recognition%20And%20Machine%20Learning%20-%20Springer%20%202006.pdf) Springer. Bishop 
-
-(http://www.stat.cmu.edu/~larry/all-of-statistics/index.html)
 
 Additional papers will be posted in the corresponding weekly directory.
 
