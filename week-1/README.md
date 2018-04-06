@@ -10,7 +10,7 @@ This week will see an introduction to the course seeing both a broad introductio
 
 This weeks slides and some readings
 
-[Slides]()
+[Slides](https://github.com/natelangholz/stat412-advancedregression/blob/master/week-1/slides-week-1.pdf)
 
 These are some papers of interest for week 1. Read them over the next week. 
 
