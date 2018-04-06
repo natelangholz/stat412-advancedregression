@@ -10,14 +10,17 @@ This week will see an introduction to the course seeing both a broad introductio
 
 This weeks slides and some readings
 
-[Slides](http://www.stat.cmu.edu/~larry/all-of-statistics/index.html)
+[Slides]()
 
-* Read pages 1-30 from Murphy, Kevin (2012), [Machine Learning: A Probabilistic Perspective.](https://doc.lagout.org/science/Artificial%20Intelligence/Machine%20learning/Machine%20Learning_%20A%20Probabilistic%20Perspective%20%5BMurphy%202012-08-24%5D.pdf)
+These are some papers of interest for week 1. Read them over the next week. 
+
+* [50 Years of Data Science](https://www.tandfonline.com/doi/full/10.1080/10618600.2017.1384734)
+* [Marketing for Data Science](https://medium.com/indeed-data-science/marketing-for-data-science-a-7-step-go-to-market-plan-for-your-next-data-product-60c034c34d55)
+* [Opinionated Analysis Development](https://peerj.com/preprints/3210/)
+* [A Code of Ethics for Data Science](https://medium.com/@dpatil/a-code-of-ethics-for-data-science-cda27d1fac1)
 
 
-### Final Project
 
-A
 
 
 
