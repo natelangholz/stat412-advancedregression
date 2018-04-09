@@ -10,7 +10,9 @@ This weeks slides and some more readings
 
 [Slides]()
 
-* [Logistic Regression born in 1958!](https://www.nuffield.ox.ac.uk/users/cox/cox48.pdf)
+The orginal paper where logistic regression is attributed to
+
+* [Logistic Regression born in 1958!](https://www.nuffield.ox.ac.uk/users/cox/cox48.pdf) D.R. Cox in the Journal of the Royal Statistical Society.
 
 
 ### Problem Set
