@@ -13,6 +13,7 @@ This weeks slides and some more readings
 The orginal paper where logistic regression is attributed to
 
 * [Logistic Regression born in 1958!](https://www.nuffield.ox.ac.uk/users/cox/cox48.pdf) D.R. Cox in the Journal of the Royal Statistical Society.
+* Read pages 245 - 252 from Murphy, Kevin (2012), [Machine Learning: A Probabilistic Perspective.]
 
 
 ### Problem Set
