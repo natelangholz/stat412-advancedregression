@@ -14,8 +14,8 @@ Problem set due dates will be announced when each problem set it distributed.
 
 Other important deadlines and dates during the term are: 
 
-* (TBD) Exploratory data analysis
-* (TBD) Submit brief (e.g. one-page) progress report
+* (Tbd) Exploratory data analysis
+* (Tbd) Submit brief (e.g. one-page) progress report
 * 6/4/2018 Final model submissions
 * 6/6/2018 Final slide sumbmissions
 * 6/7/2018 Student presentations (Week 10)
@@ -42,7 +42,7 @@ Working on actual problems is central to learning. Four problem sets will be ass
 
 ### Final Project
 
-A final project will be completed in pairs (subject to change). The project will encourage collaboration, test your predictive modeling skills, promote presenting skills, and encompass a bit of competition. A classroom Kaggle competition will be held on a provided dataset to test skills learned in this course. In addition, each pair will also present their work to the class during the final week of the quarter. Effective verbal communication is a critical skill for statisticians, and it requires practice and feedback to develop. Additional information about the final project will given as the course progresses. 
+A final project will be completed as individuals. The project will encourage collaboration, test your predictive modeling skills, promote presenting skills, and encompass a bit of competition. A classroom Kaggle competition will be held on a provided dataset to test skills learned in this course. In addition, each pair will also present their work to the class during the final week of the quarter. Effective verbal communication is a critical skill for statisticians, and it requires practice and feedback to develop. Additional information about the final project will given as the course progresses. 
 
 
 
