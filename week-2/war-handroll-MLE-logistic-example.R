@@ -3,9 +3,10 @@
 ### Fearon & Laitin. First, show predicted probabilities of war
 ### at two different levels of instability
 ###---------------------------------------------------------------
-load("fearon_laitin.RData")
 
-glm.out=glm(war~instab+lmtnest, data=fearon_laitin, family=binomial(link="logit"))
+load("week-2/data/fearon_laitin.RData")
+
+glm.out <- glm(war~instab+lmtnest, data=fearon_laitin, family=binomial(link="logit"))
 #Could use predict, or get \hat{pi} by hand for the two cases:
 pi0=1/(1+exp(-glm.out$coef[1]-0-glm.out$coef[3]*fearon_laitin$lmtnest))
 pi1=1/(1+exp(-glm.out$coef[1]-glm.out$coef[2]-glm.out$coef[3]*fearon_laitin$lmtnest))
