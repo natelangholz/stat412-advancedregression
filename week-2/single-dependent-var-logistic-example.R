@@ -1,8 +1,8 @@
 # Data are at http://www.stat.columbia.edu/~gelman/arm/examples/nes
 
-#install.packages('foreign'); needed
+#install.packages('foreign')
 library(foreign)
-library(arm)
+
 
 ## Read the data
 brdata <- read.dta("week-2/data/nes5200_processed_voters_realideo.dta",convert.factors=F)
@@ -40,31 +40,26 @@ vote <- data$presvote[ok] - 1
 income <- data$income[ok]
 
 
-
-
-# Estimation
+#model estimation
 fit.1 <- glm (vote ~ income, family=binomial(link="logit"))
 summary(fit.1)
 
-# Graph figure 5.1 (a)
+
+#inverse logit function
+invlogit<-function (x) {
+  1/(1 + exp(-x))
+}
+
+#
+plot(seq(-5,5,.2),invlogit(seq(-5,5,.2)),type = "l", xlab = 'x', ylab = 'invlogit')
+
+
+#logistic regression estimating the prob of supporting Bush
 curve (invlogit(fit.1$coef[1] + fit.1$coef[2]*x), 1, 5, ylim=c(-.01,1.01),
        xlim=c(-2,8), xaxt="n", xaxs="i", mgp=c(2,.5,0),
        ylab="Pr (Republican vote)", xlab="Income", lwd=4)
-curve (invlogit(fit.1$coef[1] + fit.1$coef[2]*x), -2, 8, lwd=.5, add=T)
-axis (1, 1:5, mgp=c(2,.5,0))
-mtext ("(poor)", 1, 1.5, at=1, adj=.5)
-mtext ("(rich)", 1, 1.5, at=5, adj=.5)
-points (jitter (income, .5), jitter (vote, .08), pch=20, cex=.1)
 
-# Graph figure 5.1 (b)
-sim.1 <- sim(fit.1)
-curve (invlogit(fit.1$coef[1] + fit.1$coef[2]*x), .5, 5.5, ylim=c(-.01,1.01),
-       xlim=c(.5,5.5), xaxt="n", xaxs="i", mgp=c(2,.5,0),
-       ylab="Pr (Republican vote)", xlab="Income", lwd=1)
-for (j in 1:20){
-  curve (invlogit(sim.1$coef[j,1] + sim.1$coef[j,2]*x), col="gray", lwd=.5, add=T)
-}
-curve (invlogit(fit.1$coef[1] + fit.1$coef[2]*x), add=T)
+curve (invlogit(fit.1$coef[1] + fit.1$coef[2]*x), -2, 8, lwd=.5, add=T)
 axis (1, 1:5, mgp=c(2,.5,0))
 mtext ("(poor)", 1, 1.5, at=1, adj=.5)
 mtext ("(rich)", 1, 1.5, at=5, adj=.5)
@@ -72,16 +67,10 @@ points (jitter (income, .5), jitter (vote, .08), pch=20, cex=.1)
 
 
 ## Evaluation at the mean
-
-display (fit.1)
 invlogit(coef(fit.1)[1] + coef(fit.1)[2]*mean(income, na.rm=T))
 
-## Fitting and displaying the model
 
 ## Displaying the results of several logistic regressions
-
-# Figure 5.4
-
 income.year <- NULL
 income.coef <- NULL
 income.se <- NULL
