@@ -1,13 +1,13 @@
 # Data are at http://www.stat.columbia.edu/~gelman/arm/examples/nes
 
-#install.packages('foreign')
+#install.packages('foreign'); to read stata file
 library(foreign)
 
 
 ## Read the data
 brdata <- read.dta("week-2/data/nes5200_processed_voters_realideo.dta",convert.factors=F)
 
-# Clean the data
+# Clean the data; too much cleaning for this simple example
 brdata <- brdata[is.na(brdata$black)==FALSE&is.na(brdata$female)==FALSE&is.na(brdata$educ1)==FALSE
                  &is.na(brdata$age)==FALSE&is.na(brdata$income)==FALSE&is.na(brdata$state)==FALSE,]
 kept.cases <- 1952:2000
@@ -33,7 +33,7 @@ rvote <- ifelse (data[,"presvote"]==1, 0, ifelse(data[,"presvote"]==2, 1, NA))
 region.codes <- c(3,4,4,3,4,4,1,1,5,3,3,4,4,2,2,2,2,3,3,1,1,1,2,2,3,2,4,2,4,1,1,4,1,3,2,2,3,4,1,
                   1,3,2,3,3,4,1,3,4,1,2,4)
 
-
+#lets only consider 1992
 yr <- '1992'
 ok <- nes.year==yr & data$presvote<3
 vote <- data$presvote[ok] - 1
@@ -42,6 +42,7 @@ income <- data$income[ok]
 
 #model estimation
 fit.1 <- glm (vote ~ income, family=binomial(link="logit"))
+#summary output
 summary(fit.1)
 
 
@@ -50,7 +51,7 @@ invlogit<-function (x) {
   1/(1 + exp(-x))
 }
 
-#
+#plot a simple example of the inverse logit function
 plot(seq(-5,5,.2),invlogit(seq(-5,5,.2)),type = "l", xlab = 'x', ylab = 'invlogit')
 
 
@@ -66,11 +67,15 @@ mtext ("(rich)", 1, 1.5, at=5, adj=.5)
 points (jitter (income, .5), jitter (vote, .08), pch=20, cex=.1)
 
 
-## Evaluation at the mean
+## evaluation at the mean
 invlogit(coef(fit.1)[1] + coef(fit.1)[2]*mean(income, na.rm=T))
 
 
-## Displaying the results of several logistic regressions
+
+
+
+###################################################################
+## displaying the results of several logistic regressions
 income.year <- NULL
 income.coef <- NULL
 income.se <- NULL
