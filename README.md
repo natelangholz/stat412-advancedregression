@@ -28,7 +28,7 @@ The course will not strictly follow a textbook but here are some great ones that
 
 * Hastie, T., Tibshirani, R., Friedman, J. (2011), [The Elements of Statistical Learning: Data Mining, Inference, and Prediction, Second Edition.](https://web.stanford.edu/~hastie/ElemStatLearn/) Springer. ESL
 
-* James, G., Witten, D., Hastie, T., Tibsharani, R. (2013), [An Introduction to Statistical Learning: with Applications in R.] (http://www-bcf.usc.edu/~gareth/ISL/) Springer. ISL
+* James, G., Witten, D., Hastie, T., Tibsharani, R. (2013), [An Introduction to Statistical Learning: with Applications in R.](http://www-bcf.usc.edu/~gareth/ISL/) Springer. ISL
 
 * Bishop, Christopher (2007), [Pattern Recognition and Machine Learning.](http://users.isr.ist.utl.pt/~wurmd/Livros/school/Bishop%20-%20Pattern%20Recognition%20And%20Machine%20Learning%20-%20Springer%20%202006.pdf) Springer. Bishop 
 
