@@ -8,7 +8,7 @@ This week will be focused in depth on Maximum Likelihood Estimation (MLE), logis
 
 This weeks slides and some more readings
 
-[Slides]()
+[Slides](https://github.com/natelangholz/stat412-advancedregression/blob/master/week-2/slides-week-2.pdf)
 
 The orginal paper where logistic regression is attributed to
 
