@@ -41,10 +41,10 @@ mean_lmtn <- mean(fearon_laitin$lmtnest)
 #tau = Pr(Y=1|T=1,X=mean(X))-Pr(Y=1|T=0,X=mean(X))
 firstdiff_fixedmean <- 1/(1+exp(-glm.out$coef[1]-glm.out$coef[2]-glm.out$coef[3]*mean_lmtn))-1/(1+exp(-glm.out$coef[1]-0-glm.out$coef[3]*mean_lmtn))
 
-###----------------------------------------------------------
-### Hand-rolled optimization for a logit model
-###----------------------------------------------------------
 
+
+
+### Hand-rolled optimization for a logit model
 #Logit log-likelihood
 loglik=function(par, X, y){  
   #check if there is already an intercept or not
