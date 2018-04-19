@@ -69,7 +69,7 @@ Some of these variables are NA for some countries.
 
 ### 6
 
-Fit a logistic regression using `y` as the response with x1 and x2 as indepedent variables. Does anything strange happen? Explain why  
+Fit a logistic regression using `y` as the response with `x1` and `x2` as indepedent variables. Does anything strange happen? Explain. 
 
 ```{r}
 y<- c(0,0,0,0,1,1,1,1)
