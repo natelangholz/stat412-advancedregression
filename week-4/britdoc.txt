@@ -1,0 +1,11 @@
+"","Age","Smoking","Deaths","PersonYears"
+"1","35 to 44","smoker",32,52407
+"2","45 to 54","smoker",104,43248
+"3","55 to 64","smoker",206,28612
+"4","65 to 74","smoker",186,12663
+"5","75 to 84","smoker",102,5317
+"6","35 to 44","non-smoker",2,18790
+"7","45 to 54","non-smoker",12,10673
+"8","55 to 64","non-smoker",28,5710
+"9","65 to 74","non-smoker",28,2585
+"10","75 to 84","non-smoker",31,1462
