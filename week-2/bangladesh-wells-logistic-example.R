@@ -122,6 +122,9 @@ fit <- glm(Switch~Dist*EduCat + log(Arsenic), family=binomial, data = wells)
 visreg(fit, "Arsenic", scale="response", partial=FALSE, ylim=c(0,1), ylab="Pr(Switch)")
 visreg(fit, "Dist", "EduCat", scale="response", partial=FALSE, ylim=c(0,1), ylab="Pr(Switch)")
 
+#arsenic and distance have been centered and a one-unit 
+#change in each corresponds approximately to a 2-SD difference
+
 ## Summarization
 tab <- table(fit$fitted > .5, wells$Switch)
 sum(tab[2:3])/sum(tab)                 ## 36.8% Error rate

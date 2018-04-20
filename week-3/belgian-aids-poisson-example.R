@@ -5,10 +5,10 @@ aids <- read.csv("week-3/aids.txt")
 plot(aids$Year,aids$Cases,pch=19,ylim=c(0,300))
 
 ## Fit basic model
-fit <- glm(Cases~Year, data=aids, family=poisson,data = aids)
+fit <- glm(Cases~Year, data=aids, family=poisson)
 summary(fit)
 confint(fit)
-fit0 <- glm(Cases~1, data=aids, family=poisson ,data = aids)
+fit0 <- glm(Cases~1, data=aids, family=poisson)
 anova(fit0, fit, test="Chisq")
 
 ## Visualizing the model
