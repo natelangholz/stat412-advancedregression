@@ -21,7 +21,7 @@ The orginal paper where logistic regression is attributed to
 
 ### Problem Set
 
-Coming Soon!
+Problem set 1 is due Monday April 30,2018 at 10pm.
 
 
 
