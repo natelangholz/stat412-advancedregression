@@ -1,7 +1,7 @@
 
 ## British doctors 
 
-britdoc <- read.csv("week-4/britdoc.txt")
+britdoc <- read.csv("week-4/data/britdoc.txt")
 PY <- britdoc$PersonYears/1000
 
 ## No interaction

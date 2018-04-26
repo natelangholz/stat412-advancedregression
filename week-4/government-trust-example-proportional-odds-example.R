@@ -1,5 +1,5 @@
 ## Setup
-martin <- read.csv("week-4/martin.txt")
+martin <- read.csv("week-4/data/martin.txt")
 Educ <- factor(martin$Educ, labels=c("Less than HS", "High School", "Some college", "College degree"))
 Year <- factor(martin$Year)
 TrustLG <- factor(martin$TrustLG, labels=c("Strongly disagree", "Disagree", "Neutral", "Agree", "Strongly agree"))

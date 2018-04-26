@@ -1,7 +1,7 @@
 
 library(pscl)
 
-NMES1988 <- read.csv('week-4/NMES1988.txt')
+NMES1988 <- read.csv('week-4/data/NMES1988.txt')
 nmes <- NMES1988[, c('visits','hospital','health','chronic','gender','school','insurance')]
 
 plot(table(nmes$visits))

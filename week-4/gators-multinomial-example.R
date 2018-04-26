@@ -2,7 +2,7 @@
 #this resides in the nnet library
 library(nnet)
 
-gators <- read.csv("week-4/gators.txt")
+gators <- read.csv("week-4/data/gators.txt")
 
 ## Descriptive
 table(gators$Food)
