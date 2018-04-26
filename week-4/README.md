@@ -3,3 +3,6 @@ Moving past poisson regression, we consider negative binomial and hurdle models 
 [Slides]()
 
 
+Some additional readings
+
+[Visualizaing Count Data Regressions Using Rootograms](https://arxiv.org/pdf/1605.01311.pdf)
