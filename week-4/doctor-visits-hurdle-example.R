@@ -35,11 +35,15 @@ summary(fit.hurdle)
 
 sum(predict(fit.hurdle, type = "prob")[,1])
 
+visits1 <- ifelse(nmes$visits >0,1,0)
+
+fit <- glm(visits ~ .,  family = 'binomial', data = nmes2)
+
 # First 5 expected counts
 predict(fit.hurdle, type = "response")[1:5]
 
 
-# ratio of non-zero probabilities (1 - type = 'prob' prediction)
+# ratio of non-zero probabilities (1 - type = 'prob' 0 prediction)
 predict(fit.hurdle, type = "zero")[1:5]
 
 # mean for untruncated process
@@ -50,6 +54,8 @@ predict(fit.hurdle, type = "zero")[1:5] * predict(fit.hurdle, type = "count")[1:
 
 # equals hurdle model expected count
 predict(fit.hurdle, type = "response")[1:5]
+
+hist(round(predict(fit.hurdle, type = "prob"))*predict(fit.hurdle, type = "response"))
 
 #install.packages("countreg", repos="http://R-Forge.R-project.org")
 library(countreg)
