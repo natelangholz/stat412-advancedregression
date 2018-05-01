@@ -1,0 +1,418 @@
+---
+  output: 
+  html_document: 
+  highlight: pygments
+---
+
+## Homework #1
+## Jeremy Guinta (ID: 604882679)
+## April 26, 2018
+
+  
+### The Sound of Gunfire, Off in the Distance
+  Our first dataset this week comes from a study of the causes of civil wars.[^1] The data
+can be read into from a csv posted online by using the following command.
+
+```{r echo=FALSE}
+options(warn=-1)
+
+require(tidyverse)
+require(data.table)
+require(dtplyr)
+require(GGally)
+require(broom)
+require(MASS)
+require(ROCR)
+options(scipen=30)
+
+out_theme <- theme_bw() + 
+  theme(panel.grid.major=element_line(color="white"), 
+		text=element_text(family="ArialMT"), 
+		legend.position="bottom",
+		plot.title = element_text(size = rel(1.0)),
+		axis.text.x = element_text(size= rel(1.0)),
+		axis.text.y = element_text(size= rel(1.0)))
+		
+color_scheme <- c("#6495ED", "#C90E17", "#001933", "#691b14", "#08519c", "#778899", "#B0C4DE", "#999999", "#000000",  "#800000", "#B23232")   
+
+```
+
+```{r echo=TRUE}
+war <- read.csv("http://www.stat.cmu.edu/~cshalizi/uADA/15/hw/06/ch.csv", row.names = 1)
+#war<-read.csv("C:/users/jguinta/desktop/ch.csv", row.names=1)
+
+war<-as.data.table(war)
+```
+
+Every row of the data represents a combination of a country and of a five year interval — the
+first row is Afghanistan, 1960, really meaning Afghanistan, 1960–1965. The 
+variables are:
+  
+  - The country name;
+- The year;
+- An indicator for whether a civil war began during that period: 1 indicates a 
+civil war has begun, the code of NA means an on-going civil war, 0 means peace.
+- Exports, really a measure of how dependent the country’s economy is on com- modity exports;
+- Secondary school enrollment rate for males, as a percentage;
+- Annual growth rate in GDP;
+- An index of the geographic concentration of the country’s population (which would be 1 if the entire population lives in one city, and 0 if it evenly spread across the territory);
+- The number of months since the country’s last war or the end of World War II, whichever is more recent;
+- The natural logarithm of the country’s population;
+- An index of social “fractionalization”, which tries to measure how much the
+country is divided along ethnic and/or religious lines;
+- An index of ethnic dominance, which tries to measure how much one ethnic
+group runs affairs in the country.
+
+Some of these variables are NA for some countries.
+
+###0 
+
+Perform some basic exploratory analysis on the data
+
+```{r echo = TRUE}
+str(war)
+summary(war)
+```
+
+```{r echo=FALSE}
+ggpairs(war[complete.cases(war)==TRUE, .(start,exports,schooling,growth,peace,concentration,lnpop,fractionalization,dominance)], upper=list(continuous="cor", combo="box", discrete="facetbar"), lower=list(continuous=wrap("smooth_loess", alpha = 0.05), combo="box", discrete="facetbar"))
+```
+
+
+### 1
+**Estimate**: Fit a logistic regression model for the start of civil war on all other variables except country and year (yes, this makes some questionable assumptions about independent observations); include a quadratic term for exports. Report the coefficients and their standard errors, together with R’s p-values. Which ones are found to be significant at the 5% level?
+
+```{r echo = TRUE}
+war[, exports2:=exports^2] #adding quadratic
+mod1<-glm(start~exports+exports2+schooling+growth+peace+concentration+lnpop+fractionalization+dominance, data=war, family="binomial")
+mod1_tidy<-as.data.table(tidy(mod1))
+mod1_tidy[, .(term, est=round(estimate,4), stderr=round(std.error,4), pval=round(statistic,4))]
+
+```
+  
+### 2
+  **Interpretation**: All parts of this question refer to the logistic regression model you just fit.
+
+
+1. What is the model’s predicted probability for a civil war in India in the period beginning 1975? 
+
+```{r echo=TRUE}
+ind<-war[country=="India" & year==1975]
+ind
+```
+
+```{r echo=TRUE}
+ind0<-predict(mod1, newdata=ind, type="response")
+ind0
+```
+
+What probability would it predict for a country just like India in 1975, except that its male secondary school enrollment rate was 30 points higher? 
+
+```{r echo=TRUE}
+ind<-war[country=="India" & year==1975]
+ind[, schooling:=schooling+30]
+ind
+```
+
+```{r echo=TRUE}
+ind1<-predict(mod1, newdata=ind, type="response")
+ind1
+```
+
+What probability would it predict for a country just like India in 1975, except that the ratio of commodity exports to GDP was 0.1 higher?
+
+```{r echo=TRUE}
+ind<-war[country=="India" & year==1975]
+ind[, exports:=exports+0.1]
+ind[, exports2:=exports^2]
+ind
+```
+
+```{r echo=TRUE}
+ind2<-predict(mod1, newdata=ind, type="response")
+ind2
+```
+
+
+  2. What is the model’s predicted probability for a civil war in Nigeria in the period beginning 1965? 
+
+```{r echo=TRUE}
+nig<-war[country=="Nigeria" & year==1965]
+nig
+```
+
+```{r echo=TRUE}
+nig0<-predict(mod1, newdata=nig, type="response")
+nig0
+```
+
+What probability would it predict for a country just like Nigeria in 1965, except that its male secondary school enrollment rate was 30 points higher? 
+
+```{r echo=TRUE}
+nig<-war[country=="Nigeria" & year==1965]
+nig[, schooling:=schooling+30]
+nig
+```
+
+```{r echo=TRUE}
+nig1<-predict(mod1, newdata=nig, type="response")
+nig1
+```
+
+What probability would it predict for a country just like Nigeria in 1965, except that the ratio of commodity exports to GDP was 0.1 higher?
+  
+```{r echo=TRUE}
+nig<-war[country=="Nigeria" & year==1965]
+nig[, exports:=exports+0.1]
+nig[, exports2:=exports^2]
+nig
+```
+
+```{r echo=TRUE}
+nig2<-predict(mod1, newdata=nig, type="response")
+nig2
+```  
+  
+  3. In the parts above, you changed the same predictor variables by the same amounts. If you did your calculations properly, the changes in predicted probabilities are not equal. Explain why not. (The reasons may or may not be the same for the two variables.)
+  
+```{r echo=TRUE}
+ind0-ind1
+nig0-nig1
+
+ind0-ind2
+nig0-nig2
+
+```
+
+Even though the model does not control for country or year, linear changes to the variables will not result in an exact unit change in the predicted probabilties.  This is because the link function (sigmoid) is not linear so changes to values move along the sigmoid function at different rates.
+
+The change in predicted probabilties for the schooling variable is not the same between India and Nigeria because even though we increased the variable linearly, the link function (sigmoid) is not linear.  This means that changes at different points along the sigmoid function produce different predicted results.  
+
+The same is true for growth in exports.  Additionally, since we adjusted the growth in exports variable by a linear amount, we also need to adjust the squared growth in exports variable.  Since this is not a linear change, we see the change in predicted probabilties between the models change at different rates.    
+
+### 3
+**Confusion**: Logistic regression predicts a probability of civil war for each country and period. Suppose we want to make a definite prediction of civil war or not, that is, to classify each data point. The probability of misclassification is minimized by predicting war if the probability is ≥ 0.5, and peace otherwise.
+
+```{r echo=TRUE}
+pred<-predict(mod1, war, type="response")
+pred<-as.data.table(cbind(war, pred))
+pred[, pred_flg:=ifelse(pred>=0.5,1,0)]
+```
+
+
+
+1. Build a 2 × 2 *confusion matrix* (a.k.a. “classification table” or “contigency table”) which counts: the number of outbreaks of civil war correctly predicted by the logistic regression; the number of civil wars not predicted by the model; the number of false predictions of civil wars; and the number of correctly predicted absences of civil wars. (Note that some entries in the table may be zero.)
+
+```{r echo=TRUE}
+pred<-as.data.frame(pred)
+table(pred[c("pred_flg", "start")])
+pred<-as.data.table(pred)
+```
+
+This model is terrible.  It rarely predicts the start of a civil war (based on on a 0.50 cutoff) at all.  
+
+2. What fraction of the logistic regression’s predictions are incorrect, i.e. what is the misclassification rate? (Note that this is if anything too kind to the model, since it’s looking at predictions to the same training data set).
+
+The misclassification rate for no civil war is the number of times the model predicted civil war, but there was no civil war.  That rate is `r round(pred[pred_flg==1 & start==0, .N] / pred[is.na(pred_flg)==FALSE & start==0, .N],3) * 100`%. (`r pred[pred_flg==1 & start==0, .N]` divided by `r pred[is.na(pred_flg)==FALSE & start==0,.N]`). 
+
+The misclassification rate for civil war is the number of times the model did not predict civil war, but there was a civil war.  That rate is `r round(pred[pred_flg==0 & start==1, .N] / pred[is.na(pred_flg)==FALSE & start==1, .N],2) * 100`%. (`r pred[pred_flg==0 & start==1, .N]` divided by `r pred[is.na(pred_flg)==FALSE & start==1, .N]`). 
+
+3. Consider a foolish (?) pundit who always predicts “no war”. What fraction of the pundit’s predictions are correct on the whole data set? What fraction are correct on data points where the logistic regression model also makes a prediction?
+
+The foolish (?) pundit would be correct `r round(pred[pred_flg==0 & start==0, .N] / nrow(pred),3) * 100` % out of the entire dataset.  (`r pred[pred_flg==0 & start==0, .N]` divided by `r nrow(pred)`) Out of records in which the model made a prediction, the rate would be `r round(pred[pred_flg==0 & start==0, .N] / pred[is.na(pred_flg)==FALSE, .N],2) * 100`%. (`r pred[pred_flg==0 & start==0, .N]` divided by `r pred[is.na(pred_flg)==FALSE,.N]`).
+
+### 4
+  **Comparison**: Since this is a classification problem with only two classes, we can compare Logistic Regression right along side Discriminant Analysis. This will require some reading. (see Introduction to Statistical Learning pages 138-149)
+
+1. Fit an Linear Discriminant Analysis (LDA) model using the same predictors that you used for your logistic regression model. 
+
+```{r echo=TRUE}
+war[, exports2:=exports^2] #adding quadratic
+mod2<-lda(start~exports+exports2+schooling+growth+peace+concentration+lnpop+fractionalization+dominance, data=war)
+pred_lda<-predict(mod2, war, method="predictive")
+
+pred_lda_class<-as.data.frame(pred_lda[[1]])
+names(pred_lda_class)<-c("class")
+pred_lda_post<-as.data.frame(pred_lda[[2]])
+names(pred_lda_post)<-c("no_civil", "civil")
+pred_lda_x<-as.data.frame(pred_lda[[3]])
+
+pred_lda<-as.data.table(cbind(pred_lda_class, pred_lda_post, pred_lda_x))
+pred_lda<-cbind(war, pred_lda)
+```
+
+What is the training misclassification rate?
+
+The misclassification rate would be when the model predicted civil war when no civil war occurred or when the model did not predict a civil war, but a civil war did occur.  Using a 0.50 cutoff, the confusion matrix for LDA is:
+
+```{r echo=TRUE}
+pred_lda<-as.data.frame(pred_lda)
+table(pred_lda[c("class", "start")]) 
+pred_lda<-as.data.table(pred_lda)
+```
+
+The misclassification rate for no civil war is the number of times the model predicted civil war, but there was no civil war.  That rate is `r round(pred_lda[class==1 & start==0, .N] / pred_lda[is.na(class)==FALSE & start==0, .N],3) * 100`%. (`r pred_lda[class==1 & start==0, .N]` divided by `r pred_lda[is.na(class)==FALSE & start==0,.N]`). 
+
+The misclassification rate for civil war is the number of times the model did not predict civil war, but there was a civil war.  That rate is `r round(pred_lda[class==0 & start==1, .N] / pred_lda[is.na(class)==FALSE & start==1,.N],2) * 100`%. (`r pred_lda[class==0 & start==1, .N]` divided by `r pred_lda[is.na(class)==FALSE & start==1,.N]`). 
+
+2. Fit a Quadratic Discriminat Analysis (QDA) model using the very same predictors. What is the training misclassification rate? 
+
+```{r echo=TRUE}
+war[, exports2:=exports^2] #adding quadratic
+mod3<-qda(start~exports+exports2+schooling+growth+peace+concentration+lnpop+fractionalization+dominance, data=war)
+pred_qda<-predict(mod3, war, method="predictive")
+
+pred_qda_class<-as.data.frame(pred_qda[[1]])
+names(pred_qda_class)<-c("class")
+pred_qda_post<-as.data.frame(pred_qda[[2]])
+names(pred_qda_post)<-c("no_civil", "civil")
+
+pred_qda<-as.data.table(cbind(pred_qda_class, pred_qda_post))
+pred_qda<-cbind(war, pred_qda)
+```
+
+The misclassification rate would be when the model predicted civil war when no civil war occurred or when the model did not predict a civil war, but a civil war did occur.  Using a 0.50 cutoff, the confusion matrix for LDA is:
+
+```{r echo=TRUE}
+pred_qda<-as.data.frame(pred_qda)
+table(pred_qda[c("class", "start")]) 
+pred_qda<-as.data.table(pred_qda)
+```
+
+The misclassification rate for no civil war is the number of times the model predicted civil war, but there was no civil war.  That rate is `r round(pred_qda[class==1 & start==0, .N] / pred_qda[is.na(class)==FALSE & start==0, .N],2) * 100`%. (`r pred_qda[class==1 & start==0, .N]` divided by `r pred_qda[is.na(class)==FALSE & start==0,.N]`). 
+
+The misclassification rate for civil war is the number of times the model did not predict civil war, but there was a civil war.  That rate is `r round(pred_qda[class==0 & start==1, .N] / pred_qda[is.na(class)==FALSE & start==1,.N],2) * 100`%. (`r pred_qda[class==0 & start==1, .N]` divided by `r pred_qda[is.na(class)==FALSE & start==1,.N]`). 
+
+
+3. How does the prediction accuracy of the three models compare? Why do you think this is?
+
+All of these models are terrible at definitely predicting a civil war using a 0.50 cutoff. 
+
+1. The GLM model rarely predicts a civil war correct.
+2. The LDA model gets it right in a couple of instances, but it is more likely to predict no civil war when one did take place.
+3. The QDA model completely misses the mark and calls nearly everything a civil war. 
+
+There are likely four main reasons for the poor performance. 
+
+#### 1. Civil war is extremely rare.  
+
+The models are having a difficult time identifying any of the patterns in the data and indicate a civil war.  For example: 
+
+```{r echo=TRUE}
+war[exports >=0.500 & exports<=0.510 & schooling >= 60 & schooling<=65,.(country, year, start, exports, schooling, growth, peace, concentration, lnpop, fractionalization, dominance)]
+```
+
+The Congo in 1990 did not have a civil war, but it did in 1995.  The variables have very similar values between the 1990 and 1995 observations but very different outcomes.
+
+Additionally, Burundi had multiple civil wars and also had similar conditions. 
+
+```{r echo=TRUE}
+war[country=="Burundi",.(country, year, start, exports, schooling, growth, peace, concentration, lnpop, fractionalization, dominance)][order(start, year)]
+```
+
+As the country flipped flop to and from civil war, many of the captured variables did not change.  
+
+#### 2. The data has many missing observations.  
+
+Nearly half the data gets thrown out based on incomplete cases for the model specification.  Furthermore, there are missing values for the civil war start variable.  
+
+#### 3. The variables captured may not be useful.
+
+This is not possible to test using the data that is available, but it could be feasible that the there is data that better captures instances of civil war.  Since we do not have that data, our model is destined to be poor. 
+
+### 4. A 0.50 cutoff for determining a civil war is a poor choice.
+
+The rate of civil war is so small that a cutoff of 0.50 for the model to accurately predict if a civil war is going to happen appears to be too stringent.  The model may be more useful to determine if the rate of civil war is increasing (or decreasing) over time. 
+
+  * * *
+  
+### 5
+**ROC**: Construct an ROC curve for all three of your models. Plot the ROC curves of all three models on the same plot.
+
+```{r echo=TRUE}
+
+#Build ROC Curve Characteristics
+
+#GLM
+prob1<-pred[, .(prob1=pred)]
+pred1<-prediction(prob1, war$start)
+pref1 <- performance(pred1, measure = "tpr", x.measure = "fpr")    
+tpr1<-as.vector(pref1@x.values)
+fpr1<-as.vector(pref1@y.values)
+pref1<-cbind(fpr1[[1]], tpr1[[1]])
+pref1<-as.data.table(pref1)
+pref1[, Type:="GLM"]
+
+#LDA
+prob2<-pred_lda[, .(prob2=civil)]
+pred2<-prediction(prob2, war$start)
+pref2 <- performance(pred2, measure = "tpr", x.measure = "fpr")    
+tpr2<-as.vector(pref2@x.values)
+fpr2<-as.vector(pref2@y.values)
+pref2<-cbind(fpr2[[1]], tpr2[[1]])
+pref2<-as.data.table(pref2)
+pref2[, Type:="LDA"]
+
+
+#QDA
+prob3<-pred_qda[, .(prob3=civil)]
+pred3<-prediction(prob3, war$start)
+pref3 <- performance(pred3, measure = "tpr", x.measure = "fpr")    
+tpr3<-as.vector(pref3@x.values)
+fpr3<-as.vector(pref3@y.values)
+pref3<-cbind(fpr3[[1]], tpr3[[1]])
+pref3<-as.data.table(pref3)
+pref3[, Type:="QDA"]
+
+roc<-as.data.frame(rbind(pref1, pref2, pref3))
+names(roc)<-c("TPR", "FPR", "Type")
+roc<-as.data.table(roc)
+roc[, Type:=as.factor(Type)]
+
+ggplot(roc, aes(x=FPR, y=TPR, color=Type, group=Type))+geom_line() + 
+  theme_bw() + out_theme + scale_color_manual(values=color_scheme)+
+  theme(legend.position="bottom", legend.title=element_blank()) + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+	theme(plot.subtitle = element_text(hjust = 0.5)) + 
+  labs(title=c("ROC By Model Type"), subtitle=c("GLM, LDA, QDA"))+
+  geom_abline(intercept=0, slope=1)
+```
+
+
+```{r echo=TRUE}
+#GLM AUC
+auc_pref1 <- performance(pred1, measure = "auc")
+auc_pref1 <- auc_pref1@y.values[[1]]
+auc_pref1
+
+#LDA AUC
+auc_pref2 <- performance(pred2, measure = "auc")
+auc_pref2 <- auc_pref2@y.values[[1]]
+auc_pref2
+
+#QDA AUC
+auc_pref3 <- performance(pred3, measure = "auc")
+auc_pref3 <- auc_pref3@y.values[[1]]
+auc_pref3
+
+```
+
+Based on the AUC measure, the QDA model performs slightly better than the GLM and LDA models.  These AUC measurements are actually considerably better than expected based on the confusion matrix results.
+
+[^1]: Based on an exercise of Cosmo Shalizi's that uses data from Collier, Paul and Anke Hoeffler (2004). *Greed and Grievance in Civil War.* Oxford Economic Papers, 56: 563–595. URL: http://economics.ouls.ox.ac.uk/12055/1/2002-01text.pdf.
+
+
+### 6
+
+Fit a logistic regression using `y` as the response with x1 and x2 as indepedent variables. Does anything strange happen? Explain why  
+
+```{r}
+y<- c(0,0,0,0,1,1,1,1)
+x1<-c(1,2,3,3,5,6,10,11)
+x2<-c(3,2,-1,-1,2,4,1,0)
+
+glm1<-glm(y~x1+x2, family="binomial")
+summary(glm1)
+```
+
+You get perfect separation of the data. For x1, everything greater than or equal to 5 is 1 and everything less than 5 is zero.  For x2, everything greater than -1 is 1 and everything less than or equal to -1 is 0.  
