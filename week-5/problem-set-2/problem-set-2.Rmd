@@ -66,3 +66,6 @@ There are 2135 labeled punch profiles each with a labeled punch type. Use the `p
 **Logistic Regression** Consider bucketing the punches into two groups (straights and hooks). Are you able to improve accuracy in any way?
 
 
+
+
+
