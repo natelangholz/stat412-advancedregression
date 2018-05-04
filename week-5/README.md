@@ -1,6 +1,6 @@
 Predictive modeling
 
-[Slides]()
+[Slides](https://github.com/natelangholz/stat412-advancedregression/blob/master/week-5/slides-week-5.pdf)
 
 
 Some additional readings. The first is something we want stay away from a bit and the other two are incredibly interesting. 
