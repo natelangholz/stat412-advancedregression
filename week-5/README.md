@@ -10,3 +10,8 @@ Some additional readings. The first is something we want stay away from a bit an
 [Statistical Modeling: The Two Cultures - Leo Breiman](https://projecteuclid.org/download/pdf_1/euclid.ss/1009213726)
 
 [The data that transformed AI research - and possibly the world](https://qz.com/1034972/the-data-that-changed-the-direction-of-ai-research-and-possibly-the-world/)
+
+
+Problem Set
+
+Problem set 2 is due Monday April 14,2018 at 10pm.
