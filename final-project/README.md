@@ -4,4 +4,4 @@
 
 ## Project Description
 
-TBD
+TBD - It's harder than I thought to setup a kaggle competition, but it almost ready. 
