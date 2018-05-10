@@ -14,10 +14,8 @@ Problem set due dates will be announced when each problem set it distributed.
 
 Other important deadlines and dates during the term are: 
 
-* (Tbd) Exploratory data analysis
-* (Tbd) Submit brief (e.g. one-page) progress report
 * 6/4/2018 Final model submissions
-* 6/6/2018 Final slide sumbmissions
+* 6/6/2018 Final slide submissions
 * 6/7/2018 Student presentations (Week 10)
 
 ## Resources
