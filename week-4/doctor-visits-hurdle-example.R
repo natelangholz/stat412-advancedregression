@@ -35,13 +35,10 @@ summary(fit.hurdle)
 
 sum(predict(fit.hurdle, type = "prob")[,1])
 
-visits1 <- ifelse(nmes$visits >0,1,0)
 
-fit <- glm(visits ~ .,  family = 'binomial', data = nmes2)
 
 # First 5 expected counts
 predict(fit.hurdle, type = "response")[1:5]
-
 
 # ratio of non-zero probabilities (1 - type = 'prob' 0 prediction)
 predict(fit.hurdle, type = "zero")[1:5]
@@ -61,8 +58,9 @@ hist(round(predict(fit.hurdle, type = "prob"))*predict(fit.hurdle, type = "respo
 library(countreg)
 rootogram(fit1, max = 80)
 rootogram(fit.nb, max = 80)
-
 rootogram(fit.hurdle, max = 80) # fit up to count 80
+
+
 
 fit.hurdle.nb <- hurdle(visits ~ ., data = nmes, dist = "negbin")
 
