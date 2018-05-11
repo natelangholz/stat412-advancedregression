@@ -1,6 +1,6 @@
 Thinking about overfitting and tree models...maybe
 
-[Slides]()
+[Slides](https://github.com/natelangholz/stat412-advancedregression/blob/master/week-6/slides-week-6.pdf)
 
 Some additional readings.
 
