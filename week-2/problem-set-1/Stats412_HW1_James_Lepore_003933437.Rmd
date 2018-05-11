@@ -1,0 +1,240 @@
+---
+title: "Stats 412 Homework 1"
+author: 'James Lepore (UID: 003933437)'
+date: "4/30/2018"
+output: html_document
+highlight: pygments
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(MASS)
+library(ROCR)
+```
+
+### The Sound of Gunfire, Off in the Distance
+Our first dataset this week comes from a study of the causes of civil wars.[^1] The data
+can be read into from a csv posted online by using the following command.
+
+```{r}
+war <- read.csv("http://www.stat.cmu.edu/~cshalizi/uADA/15/hw/06/ch.csv", row.names = 1)
+summary(war)
+```
+
+Every row of the data represents a combination of a country and of a five year interval — the
+first row is Afghanistan, 1960, really meaning Afghanistan, 1960–1965. The
+variables are:
+  
+- The country name;
+- The year;
+- An indicator for whether a civil war began during that period: 1 indicates a
+civil war has begun, the code of NA means an on-going civil war, 0 means peace.
+- Exports, really a measure of how dependent the country’s economy is on com- modity exports;
+- Secondary school enrollment rate for males, as a percentage;
+- Annual growth rate in GDP;
+- An index of the geographic concentration of the country’s population (which would be 1 if the entire population lives in one city, and 0 if it evenly spread across the territory);
+- The number of months since the country’s last war or the end of World War II, whichever is more recent;
+- The natural logarithm of the country’s population;
+- An index of social “fractionalization”, which tries to measure how much the
+country is divided along ethnic and/or religious lines;
+- An index of ethnic dominance, which tries to measure how much one ethnic
+group runs affairs in the country.
+
+Some of these variables are NA for some countries.
+
+### 1
+**Estimate**: Fit a logistic regression model for the start of civil war on all other variables except country and year (yes, this makes some questionable assumptions about independent observations); include a quadratic term for exports. Report the coefficients and their standard errors, together with R’s p-values. Which ones are found to be significant at the 5% level?
+
+```{r}
+glm.fit <- glm(start ~ . + I(exports^2), family=binomial(link="logit"), data=war[,-c(1,2)])
+summary(glm.fit)
+```
+  
+All the coefficients except for the index for ethnic "dominance" are significant at the $\alpha = .05$ level.
+  
+### 2
+**Interpretation**: All parts of this question refer to the logistic regression model you just fit.
+
+  1. What is the model’s predicted probability for a civil war in India in the period beginning 1975? What probability would it predict for a country just like India in 1975, except that its male secondary school enrollment rate was 30 points higher? What probability would it predict for a country just like India in 1975, except that the ratio of commodity exports to GDP was 0.1 higher?
+  
+```{r}
+(india.1975 <- war[which(war$country=="India" & war$year==1975),])
+glm.fit$fitted.values[toString(which(war$country=="India" & war$year==1975))]
+```
+  
+The model’s predicted probability for a civil war in India in the period beginning 1975 is 35.04%.
+
+```{r}
+india.hyp.1 <- india.1975
+india.hyp.1$schooling = india.hyp.1$schooling + 30
+
+predict.glm(glm.fit, india.hyp.1, type="response")
+```
+
+If everything else remains the same for India in the period beginning 1975, but the male secondary school enrollment rate increases by 30 percentage points, then the predicted probability of war decreases by more than half to 17.31%.
+
+```{r}
+india.hyp.2 <- india.1975
+india.hyp.2$exports = india.hyp.2$exports + .1
+
+predict.glm(glm.fit, india.hyp.2, type="response")
+```
+
+If everything else remains the same for India in the period beginning 1975, except the ratio of commodity exports to GDP was 0.1 higher, then the predicted probability of war almost doubles to 69.61%.
+
+  2. What is the model’s predicted probability for a civil war in Nigeria in the period beginning 1965? What probability would it predict for a country just like Nigeria in 1965, except that its male secondary school enrollment rate was 30 points higher? What probability would it predict for a country just like Nigeria in 1965, except that the ratio of commodity exports to GDP was 0.1 higher?
+  
+```{r}
+(nigeria.1965 <- war[which(war$country=="Nigeria" & war$year==1965),])
+glm.fit$fitted.values[toString(which(war$country=="Nigeria" & war$year==1965))]
+```
+  
+The model’s predicted probability for a civil war in Nigeria in the period beginning 1965 is 17.10%.
+
+```{r}
+nigeria.hyp.1 <- nigeria.1965
+nigeria.hyp.1$schooling = nigeria.hyp.1$schooling + 30
+
+predict.glm(glm.fit, nigeria.hyp.1, type="response")
+```
+
+If everything else remains the same for Nigeria in the period beginning 1965, but the male secondary school enrollment rate increases by 30 percentage points, then the predicted probability of war decreases by more than half to 7.41%.
+
+```{r}
+nigeria.hyp.2 <- nigeria.1965
+nigeria.hyp.2$exports = nigeria.hyp.2$exports + .1
+
+predict.glm(glm.fit, nigeria.hyp.2, type="response")
+```
+
+If everything else remains the same for Nigeria in the period beginning 1965, except the ratio of commodity exports to GDP was 0.1 higher, then the predicted probability of war almost doubles to 33.10%.
+
+  3. In the parts above, you changed the same predictor variables by the same amounts. If you did your calculations properly, the changes in predicted probabilities are not equal. Explain why not. (The reasons may or may not be the same for the two variables.)
+  
+The primary reason that the changes in predicted probabilities are not equal in magnitude is that the coefficients of a logistic regression model with a logit link measure changes in log odds. To put it in perhaps a simpler light, when the coefficient of a logit is small in magnitude (i.e. less < .1), the coefficient can actually be thought of as an approximation of the percent change for every one unit increase. The percent change in predicted probability is obviously dependent on the baseline and starting input values. India in 1975 (35.04%) and Nigeria in 1965 (17.09%) are starting from two very different places, and the male secondary school enrollment rates are also quite different (36% for India versus 7% for Nigeria). This is in contrast to a linear regression where the coefficients measure the linear effect of a one unit increase in the input (meaning the base and starting value are irrelevant). That being said, even in a regular regression model we would still observe a different magnitude change in predicted probabilites for equivalent increases in the ratio of commodity exports to GDP. The reasoning why is quite similar. If you recall, we modeled the exports variable with an additional quadratic term, meaning the linear interpretation of the coefficients continues to no longer be applicable because once again the starting input values will matter. For example, a .1 increase from .026 (India 1975) will result in a .0152 increase in the quadratic input. Whereas a .1 increase from .123 (Nigeria 1965) will result in a .0346 quadratic input (more than double the magnitude).
+
+### 3
+**Confusion**: Logistic regression predicts a probability of civil war for each country and period. Suppose we want to make a definite prediction of civil war or not, that is, to classify each data point. The probability of misclassification is minimized by predicting war if the probability is ≥ 0.5, and peace otherwise.
+
+  1. Build a 2 × 2 *confusion matrix* (a.k.a. “classification table” or “contigency table”) which counts: the number of outbreaks of civil war correctly predicted by the logistic regression; the number of civil wars not predicted by the model; the number of false predictions of civil wars; and the number of correctly predicted absences of civil wars. (Note that some entries in the table may be zero.)
+  
+```{r}
+pred.labels <- rep("Peace", length(glm.fit$fitted.values))
+pred.labels[glm.fit$fitted.values>=0.5] = "War"
+war$start.labels[war$start==0] = "Peace"
+war$start.labels[war$start==1] = "War"
+(cm <- table(pred.labels, war[complete.cases(war),]$start.labels))
+```
+
+  2. What fraction of the logistic regression’s predictions are incorrect, i.e. what is the misclassification rate? (Note that this is if anything too kind to the model, since it’s looking at predictions to the same training data set).
+  
+```{r}
+mean(pred.labels!=war[complete.cases(war),]$start.labels)
+```
+
+The misclassification rate for this training data set is 6.98%.
+  
+  3. Consider a foolish (?) pundit who always predicts “no war”. What fraction of the pundit’s predictions are correct on the whole data set? What fraction are correct on data points where the logistic regression model also makes a prediction?
+  
+```{r}
+(naive.1 = table(war$start.labels))
+prop.table(naive.1)
+
+(naive.2 = table(war[complete.cases(war),]$start.labels))
+prop.table(naive.2)
+```
+
+A naive prediction (always picking "Peace") has a misclassification rate of about 6.69% for both the whole data set and just the observations with no missing data. Because civil war is a relatively unlikely event to occur, and because even when it does occur it is relatively difficult to predict, the naive approach actually does slightly better than the logistic regression in terms of accuracy. It is always a good idea to calculate the naive prediction accuracy so we have an idea of what the baseline is when evaluating models.
+  
+### 4
+**Comparison**: Since this is a classification problem with only two classes, we can compare Logistic Regression right along side Discriminant Analysis. This will require some reading. (see Introduction to Statistical Learning pages 138-149)
+
+  1. Fit an Linear Discriminant Analysis (LDA) model using the same predictors that you used for your logistic regression model. What is the training misclassification rate?
+  
+```{r}
+lda.fit <- lda(start ~ ., data=war[,-c(1,2,12)])
+lda.fit
+
+lda.pred <- predict(lda.fit, war[complete.cases(war),])
+
+(cm <- table(lda.pred$class, war[complete.cases(war),]$start))
+
+mean(lda.pred$class!=war[complete.cases(war),]$start)
+```
+
+The training misclassification rate for the LDA is 6.40%.
+
+  2. Fit a Quadratic Discriminant Analysis (QDA) model using the very same predictors. What is the training misclassification rate?
+  
+```{r}
+qda.fit <- qda(start ~ ., data=war[,-c(1,2,12)])
+qda.fit
+
+qda.pred <- predict(qda.fit, war[complete.cases(war),])
+
+(cm <- table(qda.pred$class, war[complete.cases(war),]$start))
+
+mean(qda.pred$class!=war[complete.cases(war),]$start)
+```
+  
+The training misclassification rate for the QDA is 6.40%.
+  
+  3. How does the prediction accuracy of the three models compare? Why do you think this is?
+  
+The prediction accuracy for both the LDA and QDA is exactly the same at 6.40% (44 errors distributed differently with the QDA more generously predicting civil wars). This misclassification rate is lower (albeit modestly) than both the logistic regression (48 errors) and naive approach (46 errors)! LDA and QDA can give more stable estimates when the sample size is small and assumptions can be made about the distributions of the input variables, and when the classes are fairly well-separated (which, given the relative infrequency of civil wars, is somewhat true in this case).
+  
+### 5
+**ROC**: Construct an ROC curve for all three of your models. Plot the ROC curves of all three models on the same plot.
+
+```{r, fig.width=9, fig.height=7}
+rocr.pred.glm <- prediction(glm.fit$fitted.values, war[complete.cases(war),]$start)
+performance(rocr.pred.glm, "auc")@y.values[[1]]
+
+rocr.pred.lda <- prediction(lda.pred$posterior[,2], war[complete.cases(war),]$start)
+performance(rocr.pred.lda, "auc")@y.values[[1]]
+
+rocr.pred.qda <- prediction(qda.pred$posterior[,2], war[complete.cases(war),]$start)
+performance(rocr.pred.qda, "auc")@y.values[[1]]
+
+perf.glm <- performance(rocr.pred.glm,"tpr","fpr")
+perf.lda <- performance(rocr.pred.lda,"tpr","fpr")
+perf.qda <- performance(rocr.pred.qda,"tpr","fpr")
+
+plot(perf.glm, col="red", lwd=3, main="ROC Curve for GLM, LDA, and QDA")
+plot(perf.lda, col="blue", lwd=3, add=TRUE)
+plot(perf.qda, col="darkgreen", lwd=3, add=TRUE)
+abline(a=0, b=1, col="black", lwd=2)
+
+legend("bottomright", legend=c("GLM", "LDA", "QDA"),
+col=c("red", "blue", "darkgreen"), lty=1, lwd=3,
+box.lty=0, cex=1.4)
+```
+
+Looking at the plot of the ROC curve, we can easily observe that the QDA has the largest area under the curve (AUC) of the three methods (0.8864621 versus 0.8597792 for the GLM, and 0.8315387 for the LDA). This result is important in model evaluation because it indicates which method yields the best balance between maximizing the true positive rate (sensitivity) while minimizing the false positive rate (1 - specificity) across different possible thresholds (naturally, any increase in sensitivity will correspond with a decrease in specificity). This area under the curve measures what is referred to as discrimination, which can be loosely defined as the ability of the model to correctly classify randomly drawn pairs from each of the classes. So, while the QDA and LDA both had the same misclassification rate, QDA appears to be the best fit for classification for this specific training set. Another consideration when doing classification is whether or not there is a preference for which type of error matters the most. In this case, I would lean towards saying that for planning purposes it is worse to predict peace when there is actually going to be a civil war than it is to predict civil war when there will actually be peace. With this in mind, it might be beneficial to take that into account when choosing an optimal threshold. When using the .5 threshold we used for the confusion matrices in the previous problem, the QDA had the lowest false negative rate which is perhaps another point in its favor.
+
+[^1]: Based on an exercise of Cosmo Shalizi's that uses data from Collier, Paul and Anke Hoeffler (2004). *Greed and Grievance in Civil War.* Oxford Economic Papers, 56: 563–595. URL: http://economics.ouls.ox.ac.uk/12055/1/2002-01text.pdf.
+
+
+### 6
+
+Fit a logistic regression using `y` as the response with `x1` and `x2` as indepedent variables. Does anything strange happen? Explain.
+
+```{r}
+y<- c(0,0,0,0,1,1,1,1)
+x1<-c(1,2,3,3,5,6,10,11)
+x2<-c(3,2,-1,-1,2,4,1,0)
+
+glm.fit2 <- glm(y ~ x1 + x2, family=binomial(link="logit"))
+summary(glm.fit2)
+```
+
+When we run a logistic regression on this sample data, we get the following warning message: "glm.fit: fitted probabilities numerically 0 or 1 occurred". This warning means that the data is separable, or, in other words, that there is a cut in one or more of the predictors that can perfectly predict the response. Looking at the data, we can identify where this separation occurs. When the independent variable "x1" is less than or equal to 3, the response variable "y" is always 0, and when the independent variable "x1" is greater than 3, the response variable "y" is always 1. This type of separation is called complete separation. When this occurs, there is no maximum likelihood estimate for the "x1" parameter and so the coefficients of the model want to go to infinity since the classification is perfect. In R, this behavior is represented with a large estimate and an enormous standard error. While perfect predictors can certainly provide useful information, that information must be evaluated externally and then those predictors must be taken out before running the logistic regression (or you can use a different method that handles these predictors such as an exact logistic regression or introducing a complexion penalty parameter). For example, let us suppose that we have reason to believe that values less than or equal to 3 in "x1" would not ***always*** lead to a 0 response, and this phenomenon in our sample data is simply due to the small sample size. In this case, we might be interested in knowing if "x2" has any predictive power. Dropping out "x1" results in the following:
+
+```{r}
+glm.fit3 <- glm(y ~ x2, family=binomial(link="logit"))
+summary(glm.fit3)
+```
+
+We no longer get a warning message and the coefficients and standard errors look normal, but we also see that "x2" is not a statistically significant predictor. We would now probably have to either gather more data so that we can observe cases that would result in no longer having perfect prediction (i.e. observations with "x1" less than or equal to 3 and a "y" of 1, and "x1" greater than 3 and a "y" of 0), or try to understand why "x1" might in fact be a perfect predictor (in which case, running fancy algorithms for prediction would be unneccessary assuming "x1" is easily obtained!) 
+
