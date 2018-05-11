@@ -54,3 +54,6 @@ points(aids$Year,aids$Cases,pch=19, cex=0.7)
 visreg(fit.nb, scale="response", ylim=c(0, 350), partial=FALSE, ylab="Cases", main="Negative binomial")
 points(aids$Year,aids$Cases,pch=19, cex=0.7)
 
+
+fit <- glm.nb(Cases~Year+I(Year^2), data=aids)
+

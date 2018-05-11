@@ -1,0 +1,71 @@
+---
+  output: 
+  html_document: 
+  highlight: pygments
+---
+
+
+  
+### Risky Behavior
+  The data `risky_behaviors.dta` is from a randomized experiment that targeted couples at high risk of HIV infection. Counseling sessions were provided to the treatment group regarding practices that could reduce their likelihood of contracting HIV. Couples were randomized either to a control group, a group in which just the woman participated, or a group in which both members of the couple participated. The response variable to be examined after three months was “number of unprotected sex acts.”
+
+```{r}
+library(foreign)
+rb <- read.dta("http://www.stat.columbia.edu/~gelman/arm/examples/risky.behavior/risky_behaviors.dta", convert.factors=TRUE)
+```
+
+
+### 1
+**Estimate**: Model this outcome as a function of treatment assignment using a Poisson regression. Does the model fit well? Is there evidence of overdispersion?
+ 
+### 2
+**Estimate Extension**: Extend the model to include pre-treatment measures of the outcome and the additional pre-treatment variables included in the dataset. Does the model fit well? Is there evidence of overdispersion?
+  
+### 3
+  **Overdispersion**: Fit an overdispersed (quasi-)Poisson model. Fit a negative binomial model. Compare the models to previous two you have fit. Finally, what do you conclude regarding effectiveness of the intervention?
+  
+### 4
+  **Hurdle Model?**: Fit a hurdle model to this data. This is a classic data set for Poisson regression and overdispersion...i'm honestly curious if the hurdle model makes sense and improves over any of the other previous models you have built. Also compare rootograms for all. 
+
+
+### 5
+**Assumptions**: These data include responses from both men and women from the participating couples. Does this give you any concern?
+
+
+  * * *
+  
+### Pulling Punches
+
+The two `.Rdata` files under week 4 come as an abbreviated version of punch profiles from a boxing system to measure acceleration of boxers during live fights. The `profiles` list from the first file below has each individual punch profile which has a list item being a 3 column data frame of time (in ms around the middle of the punch event), acceleration in x (forward-back in g's), and acceleration in y (side-to-side in g's). Also attached are some other fields which are of less importance and contribute to this being a somewhat messy data set.
+
+```{r two, eval = FALSE}
+load(file = 'week-4/punch_profiles.Rdata')
+load(file = 'week-4/punch_types.Rdata')
+```
+
+There are 2135 labeled punch profiles each with a labeled punch type. Use the `punch_types` data frame as ground truth for punch type (labeled 1-6) in addition to the boxers stance (orthodox or southpaw), and punching head (right or left). The punch types are below.
+
+```{r}
+###### PUNCH TYPES
+#1 - Cross
+#2 - Hook
+#3 - Jab
+#4 - Upper Cut
+#5 - Overhand (shouldn't be any of these)
+#6 - Unknown (shouldn't be any of these)
+```
+
+
+### 6
+**Features**: Create at least 10 new features from the punch profiles. They can be combinations of x and y acceleration or individually from either. Explain how these features have been constructed.
+
+### 7
+**Multinomial Model** Fit a multinomial model to estimate each of the punch types. Which of the punch types have the most difficulty in being separated?
+
+### 8
+**Logistic Regression** Consider bucketing the punches into two groups (straights and hooks). Are you able to improve accuracy in any way?
+
+
+
+
+
