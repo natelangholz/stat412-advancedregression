@@ -124,19 +124,14 @@ $(document).ready(function () {
 <div id="music-genre" class="section level3">
 <h3>Music Genre</h3>
 <p>This data set was published as a contest data set on the TunedIT web site (<a href="http://tunedit.org/challenge/music-retrieval/genres" class="uri">http://tunedit.org/challenge/music-retrieval/genres</a>). In this competition, the objective was to develop a predictive model for classifying music into six categories. In total, there were 12,495 music samples for which 191 characteristics were determined. All predictors were continuous; many were highly correlated and the predictors spanned different scales of measurement. This data collection was created using 60 per- formers from which 15–20 pieces of music were selected for each performer. Then 20 segments of each piece were parameterized in order to create the final data set. Hence, the samples are inherently not independent of each other.</p>
-<pre class="r"><code>genres &lt;- read.csv(&quot;http://www.stat.columbia.edu/~gelman/arm/examples/risky.behavior/risky_behaviors.dta&quot;)</code></pre>
-<pre><code>## Warning in read.table(file = file, header = header, sep = sep, quote =
-## quote, : line 1 appears to contain embedded nulls</code></pre>
-<pre><code>## Warning in read.table(file = file, header = header, sep = sep, quote =
-## quote, : line 2 appears to contain embedded nulls</code></pre>
-<pre><code>## Warning in read.table(file = file, header = header, sep = sep, quote =
-## quote, : line 3 appears to contain embedded nulls</code></pre>
-<pre><code>## Warning in read.table(file = file, header = header, sep = sep, quote =
-## quote, : line 4 appears to contain embedded nulls</code></pre>
-<pre><code>## Warning in read.table(file = file, header = header, sep = sep,
-## quote = quote, : incomplete final line found by readTableHeader on
-## 'http://www.stat.columbia.edu/~gelman/arm/examples/risky.behavior/
-## risky_behaviors.dta'</code></pre>
+<pre class="r"><code>library(readr)
+genres &lt;- read_csv(&quot;https://raw.githubusercontent.com/natelangholz/stat412-advancedregression/master/week-7/problem-set-3/genresTrain.csv&quot;)</code></pre>
+<pre><code>## Parsed with column specification:
+## cols(
+##   .default = col_double(),
+##   GENRE = col_character()
+## )</code></pre>
+<pre><code>## See spec(...) for full column specifications.</code></pre>
 </div>
 <div id="section" class="section level3">
 <h3>1</h3>
@@ -148,14 +143,14 @@ $(document).ready(function () {
 </div>
 <div id="section-2" class="section level3">
 <h3>3</h3>
-<p><strong>Data Splitting</strong>: Create a variable importance plot from you best model. What features are most important?</p>
+<p><strong>Variable Importance</strong>: Create a variable importance plot from you best model. What features are most important?</p>
 <hr />
 </div>
 <div id="pulling-punches-part-2" class="section level3">
 <h3>Pulling Punches Part 2</h3>
 <p>The two <code>.Rdata</code> files under week 7 come as an abbreviated version of punch profiles from a boxing system to measure acceleration of boxers during live fights. The <code>profiles</code> list from the first file below has each individual punch profile which has a list item being a 3 column data frame of time (in ms around the middle of the punch event), acceleration in x (forward-back in g’s), and acceleration in y (side-to-side in g’s). Also attached are some other fields which are of less importance and contribute to this being a somewhat messy data set.</p>
-<pre class="r"><code>load(file = 'week-4/punch_profiles.Rdata')
-load(file = 'week-4/punch_types.Rdata')</code></pre>
+<pre class="r"><code>#load(file = 'week-4/punch_profiles.Rdata')
+#load(file = 'week-4/punch_types.Rdata')</code></pre>
 <p>There are 2135 labeled punch profiles each with a labeled punch type. Use the <code>punch_types</code> data frame as ground truth for punch type (labeled 1-6) in addition to the boxers stance (orthodox or southpaw), and punching head (right or left). The punch types are below.</p>
 <pre class="r"><code>###### PUNCH TYPES</code></pre>
 </div>
