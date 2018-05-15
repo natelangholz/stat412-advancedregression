@@ -1,0 +1,255 @@
+---
+title: "Stats 412 Homework 2"
+author: 'James Lepore (UID: 003933437)'
+date: "5/14/2018"
+output: html_document
+highlight: pygments
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(MASS)
+library(visreg)
+library(AER)
+library(pscl)
+library(countreg)
+library(data.table)
+library(nnet)
+library(mgcv)
+```
+  
+### Risky Behavior
+The data `risky_behaviors.dta` is from a randomized experiment that targeted couples at high risk of HIV infection. Counseling sessions were provided to the treatment group regarding practices that could reduce their likelihood of contracting HIV. Couples were randomized either to a control group, a group in which just the woman participated, or a group in which both members of the couple participated. The response variable to be examined after three months was “number of unprotected sex acts.”
+
+```{r}
+library(foreign)
+rb <- read.dta("http://www.stat.columbia.edu/~gelman/arm/examples/risky.behavior/risky_behaviors.dta", convert.factors=TRUE)
+```
+
+### 1
+**Estimate**: Model this outcome as a function of treatment assignment using a Poisson regression. Does the model fit well? Is there evidence of overdispersion?
+
+```{r}
+rb$treatment <- ifelse(rb$couples==1, "Couples", ifelse(rb$women_alone==1, "Women", "Control"))
+table(rb$treatment)
+prop.table(table(rb$treatment))
+glm.fit <- glm(round(fupacts) ~ treatment, family="poisson", data=rb)
+summary(glm.fit)
+```
+
+Calculating the difference in deviance between the null and residual model (13,299 - 12,925 = 374) we see that the Poisson model appears to provide a better fit than the null model.
+
+```{r}
+with(glm.fit, cbind(res.deviance = deviance, df = df.residual,
+  p = pchisq(deviance, df.residual, lower.tail=FALSE)))
+```
+
+That being said, running a goodness-of-fit chi-squared test, where the null hypothesis is that the model is a good fit, indicates that the model is not a good fit of the data (p-value ~ 0). As we will see below, this is likely due to the overdispersion that the model exhibits.
+
+```{r}
+dispersiontest(glm.fit, trafo=1)
+```
+ 
+Overdispersion occurs when the observed variance is higher than the variance of a theoretical model. In the Poisson distribution, the variance is equal to the mean which means there is only one free parameter. In the case of simple parametric models such as the Poisson, overdispersion is more likely to occur.
+
+The `AER` package in R provides a test for overdispersion by taking advantage of the fact that in a Poisson distribution the mean is equal to the variance. The null hypothesis of the test is simply that the $Var(Y) = \mu$, versus the alternative that $Var(Y) = \mu + \alpha*f(\mu)$. The null hypothesis is then therefore that $\alpha = 0$, and the alternative is that $\alpha \neq 0$. $\alpha \gt 0$ would imply overdispersion, and $\alpha \lt 0$ would imply underdispersion. Here we clearly see evidence of overdispersion with an estimated alpha of 42.8295, which corresponds to a p-value of essentially 0.
+
+### 2
+**Estimate Extension**: Extend the model to include pre-treatment measures of the outcome and the additional pre-treatment variables included in the dataset. Does the model fit well? Is there evidence of overdispersion?
+
+```{r}
+glm.fit.2 <- glm(round(fupacts) ~ treatment + bs_hiv + bupacts + as.factor(sex), family="poisson", data=rb)
+summary(glm.fit.2)
+```
+
+We can include other predictors such as the sex of the individual, whether or not the person had HIV before sex, and the the number of unprotected sex acts the person partook in before treatment. Calculating the difference in deviance between the null and residual model (13,299 - 10,200 = 3,099) we see that the Poisson model appears to provide a better fit than the null model, and the model fit in part one for that matter.
+
+```{r}
+with(glm.fit.2, cbind(res.deviance = deviance, df = df.residual,
+  p = pchisq(deviance, df.residual, lower.tail=FALSE)))
+```
+
+Once again, running a goodness-of-fit chi-squared test, where the null hypothesis is that the model is a good fit, indicates that the model is not a good fit of the data (p-value ~ 0). Just as before, this is likely due to the overdispersion that the model exhibits.
+
+```{r}
+dispersiontest(glm.fit.2, trafo=1)
+```
+  
+We again observe overdispersion, this time with an estimated alpha of 28.65146, which corresponds to a p-value of essentially 0.
+  
+### 3
+**Overdispersion**: Fit an overdispersed (quasi-)Poisson model. Fit a negative binomial model. Compare the models to previous two you have fit. Finally, what do you conclude regarding effectiveness of the intervention?
+
+```{r}
+qp.fit <- glm(round(fupacts) ~ treatment + bs_hiv + bupacts + as.factor(sex), family="quasipoisson", data=rb)
+summary(qp.fit)
+```
+
+Quasi-poisson allows the variance to differ from the mean in a linear fashion by applying a dispersion parameter (in this case, 30.00407). Dispersion in this case is defined as ($1 + \alpha$).
+
+```{r}
+nb.fit <- glm.nb(round(fupacts) ~ treatment + bs_hiv + bupacts + as.factor(sex), data=rb)
+summary(nb.fit)
+```
+
+The negative binomial model also allows the mean and variance to differ (this time in accordance to the the negative binomial distribution). The relationship can be defined as $Var(Y) = \mu * (1 + K\mu)$, where $K$ is the shape parameter of the negatve binomial distribution.
+
+In all cases, we see that both the treatments apear to have a statistically significant effect, at the $\alpha = .10$ level of significance, on the count of unprotected sex acts (with the "Couples" treatment for the negative binomial model as the only exception at the $\alpha = .05$ level of significance). Both effects are negative, with talking to women alone appearing to be the most effective.
+  
+### 4
+**Hurdle Model?**: Fit a hurdle model to this data. This is a classic data set for Poisson regression and overdispersion...i'm honestly curious if the hurdle model makes sense and improves over any of the other previous models you have built. Also compare rootograms for all.
+
+```{r}
+hurdle.fit <- hurdle(round(fupacts) ~ treatment + bs_hiv + bupacts + as.factor(sex), data=rb)
+summary(hurdle.fit)
+```
+
+```{r}
+rootogram(glm.fit.2)
+rootogram(nb.fit)
+rootogram(hurdle.fit)
+```
+
+```{r}
+AIC(glm.fit.2)
+AIC(nb.fit)
+AIC(hurdle.fit)
+```
+
+We can see from the rootograms that the Poisson model has clear overdispersion and underestimates the 0s quite a bit. Meanwhile, the hurdle model gets the number of 0s correct, but then has problems with the rest of the distribution. The negative binomial model appears to be the Goldilocks of the group, which is also supported by having the lowest AIC.
+
+### 5
+**Assumptions**: These data include responses from both men and women from the participating couples. Does this give you any concern?
+
+The responses are likely (hopefully...) not independent of each other. In a sense, it is sort of like matched pair data, and the standard errors, at the least, should probably be adjusted.
+
+  * * *
+  
+### Pulling Punches
+
+The two `.Rdata` files under week 4 come as an abbreviated version of punch profiles from a boxing system to measure acceleration of boxers during live fights. The `profiles` list from the first file below has each individual punch profile which has a list item being a 3 column data frame of time (in ms around the middle of the punch event), acceleration in x (forward-back in g's), and acceleration in y (side-to-side in g's). Also attached are some other fields which are of less importance and contribute to this being a somewhat messy data set.
+
+```{r}
+load(file = 'week-4/punch_profiles.Rdata')
+load(file = 'week-4/punch_types.Rdata')
+```
+
+There are 2135 labeled punch profiles each with a labeled punch type. Use the `punch_types` data frame as ground truth for punch type (labeled 1-6) in addition to the boxers stance (orthodox or southpaw), and punching head (right or left). The punch types are below.
+
+```{r}
+###### PUNCH TYPES
+#1 - Cross
+#2 - Hook
+#3 - Jab
+#4 - Upper Cut
+#5 - Overhand (shouldn't be any of these)
+#6 - Unknown (shouldn't be any of these)
+```
+
+### 6
+**Features**: Create at least 10 new features from the punch profiles. They can be combinations of x and y acceleration or individually from either. Explain how these features have been constructed.
+
+```{r, eval=FALSE}
+N = length(profiles)
+profLong <- data.frame(matrix(ncol = 4, nrow = 1001*N))
+
+for (i in 1:N) {
+  
+  if (i==1) {
+    profLong <- cbind(rep(i, 1001), profiles[[i]]$profile)
+  }
+  else {
+    profLong <- rbind(profLong,
+                      cbind(rep(i, 1001),
+                            profiles[[i]]$profile))
+  }
+  
+}
+
+profLong <- as.data.table(profLong)
+
+save(profLong, file="week-4/profLong.RData")
+```
+
+```{r, eval=FALSE}
+N = max(profLong$V1)
+features <- data.frame(matrix(ncol = 45, nrow = N))
+
+for (i in 1:N) {
+
+  temp.row <- c(i, max(profLong[V1==i,]$V3))
+  temp.row <- c(temp.row, max(profLong[V1==i,]$V4))
+  temp.row <- c(temp.row, min(profLong[V1==i,]$V3))
+  temp.row <- c(temp.row, min(profLong[V1==i,]$V4))
+  temp.gam <- gam(V3 ~ s(V2, k = 20, bs = "cs"),
+                     data = profLong[V1==i,])
+  temp.row <- c(temp.row, temp.gam$coefficients)
+  temp.gam <- gam(V4 ~ s(V2, k = 20, bs = "cs"),
+                     data = profLong[V1==i,])
+  temp.row <- c(temp.row, temp.gam$coefficients)
+  
+  if (i==1) features <- temp.row
+  else features <- rbind(features, temp.row)
+  
+}
+
+features <- cbind(features, punch_types$st)
+features <- cbind(features, punch_types$hand)
+
+save(features, file="week-4/features.RData")
+```
+
+As features, for both the horizontal and vertical readings, I took the minimum and the maximum, fit a spline with 20 knots each and used the coefficients as inputs, as well as dominant hand, and what hand the punch was thrown with (a total of 46 parameters). Fitting a spline basically acts as a dimension reduction (going from 2,002 total data points to 40 features). The spline essentially estimates different slopes after subsetting the data at different knots which can then be compared across punch profiles. An example of a spline overlayed on an actual profile is shown below.
+
+```{r}
+load("week-4/profLong.RData")
+
+G1 <- gam(V3 ~ s(V2, k = 20, bs = "cs"), data = profLong[V1==150,])
+plot(G1, col="red", ylim=c(-10, 35),
+     main="Example of a Spline-Smoothed Punch Profile")
+points(V3 ~ V2, data = profLong[V1==150,])
+```
+
+The spline smooths out the profile to hopefully allow the model to see big picture patterns. More knots could be added to reduce the smoothing and fit each profile better, but this would add to the model complexity and perhaps overfit each profile.
+
+### 7
+**Multinomial Model** Fit a multinomial model to estimate each of the punch types. Which of the punch types have the most difficulty in being separated?
+
+```{r}
+load("week-4/features.RData")
+
+features <- cbind(features, punch_types$pt)
+
+fit <- nnet::multinom(features[,48] ~ features[, 2:45] +
+                  as.factor(features[,46]) +
+                  as.factor(features[,47]), trace=FALSE)
+
+summary(fit)
+
+pred <- predict(fit, type="class")
+
+features <- cbind(features, pred)
+table(features[,49], features[,48])
+prop.table(table(features[,49], features[,48]), margin=2)
+```
+
+Crosses and jabs were predicted very well using the multinomial (about 94% and 95% accuracy, respectively), hooks were pretty well predicted (almost 83% accuracy), while upper cuts appeared to have some trouble (only about 31% accuracy, while over 54% of the actual hooks were incorrectly defined as upper cuts). Overall, the accuracy is roughly 88% ((461 + 615 + 775 + 26) / 2,135).
+
+### 8
+**Logistic Regression** Consider bucketing the punches into two groups (straights and hooks). Are you able to improve accuracy in any way?
+
+```{r}
+bucket <- ifelse(features[,48]==1 | features[,48]==3, 1, 0)
+
+glm.fit <- glm(bucket ~ features[, 2:45] +
+                  as.factor(features[,46]) +
+                  as.factor(features[,47]),
+               family=binomial(link="logit"))
+
+table(glm.fit$fitted.values>.5, bucket)
+prop.table(table(glm.fit$fitted.values>.5, bucket), margin=2)
+```
+
+Bucketing crosses and jabs together, and hooks and upper cuts together, we are able to get a 90.5% ((1,241 + 692) / 2,135) accuracy in distinguishing between the two. While this is good, and slightly better than the overall accuracy of the multinomial, crosses and jabs were already individually correctly classified in the multinomial around 95% of the time. Upper cuts was the major problem, but even then when they were incorrectly classified it was usually as a hook anyways, so it does not appear to add much value for the loss in detail.
+
