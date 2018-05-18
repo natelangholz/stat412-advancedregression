@@ -1,0 +1,55 @@
+---
+  output: 
+  html_document: 
+  highlight: pygments
+---
+
+
+  
+### Music Genre
+  This data set was published as a contest data set on the TunedIT web site (http://tunedit.org/challenge/music-retrieval/genres). In this competition, the objective was to develop a predictive model for classifying music into six categories. In total, there were 12,495 music samples for which 191 characteristics were determined. All predictors were continuous; many were highly correlated and the predictors spanned different scales of measurement. This data collection was created using 60 per- formers from which 15–20 pieces of music were selected for each performer. Then 20 segments of each piece were parameterized in order to create the final data set. Hence, the samples are inherently not independent of each other.
+
+```{r}
+library(readr)
+genres <- read_csv("https://raw.githubusercontent.com/natelangholz/stat412-advancedregression/master/week-7/problem-set-3/genresTrain.csv")
+```
+
+### 1
+**Random Forest**: Fit a random forest model using both CART trees and conditional inference trees to the music genre predictors. Do you have any difficulty on the full data set? 
+
+### 2
+**Data Splitting**: What data splitting method(s) would you use for these data? Explain.
+
+### 3
+**Variable Importance**: Create a variable importance plot from you best model. What features are most important?
+
+  * * *
+  
+### Pulling Punches Part 2
+
+The two `.Rdata` files under week 7 come as an abbreviated version of punch profiles from a boxing system to measure acceleration of boxers during live fights. The `profiles` list from the first file below has each individual punch profile which has a list item being a 3 column data frame of time (in ms around the middle of the punch event), acceleration in x (forward-back in g's), and acceleration in y (side-to-side in g's). Also attached are some other fields which are of less importance and contribute to this being a somewhat messy data set.
+
+```{r two, eval = FALSE}
+#load(file = 'week-4/punch_profiles.Rdata')
+#load(file = 'week-4/punch_types.Rdata')
+```
+
+There are 2135 labeled punch profiles each with a labeled punch type. Use the `punch_types` data frame as ground truth for punch type (labeled 1-6) in addition to the boxers stance (orthodox or southpaw), and punching head (right or left). The punch types are below.
+
+```{r}
+###### PUNCH TYPES
+
+```
+
+
+### 6
+**Classification**: Use features created from your problem set 2 to classify `punches` vs `non-punches` first just using a logistic regression.
+
+### 7
+**Classification improved** Now try a few different models through the `caret` package and different data splitting techniques to compare. Which model performs the best?
+
+
+
+
+
+
