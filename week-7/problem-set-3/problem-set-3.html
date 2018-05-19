@@ -123,19 +123,14 @@ $(document).ready(function () {
 
 <div id="music-genre" class="section level3">
 <h3>Music Genre</h3>
-<p>This data set was published as a contest data set on the TunedIT web site (<a href="http://tunedit.org/challenge/music-retrieval/genres" class="uri">http://tunedit.org/challenge/music-retrieval/genres</a>). In this competition, the objective was to develop a predictive model for classifying music into six categories. In total, there were 12,495 music samples for which 191 characteristics were determined. All predictors were continuous; many were highly correlated and the predictors spanned different scales of measurement. This data collection was created using 60 per- formers from which 15–20 pieces of music were selected for each performer. Then 20 segments of each piece were parameterized in order to create the final data set. Hence, the samples are inherently not independent of each other.</p>
+<p>This data set was published as a contest data set on the TunedIT web site (<a href="http://tunedit.org/challenge/music-retrieval/genres" class="uri">http://tunedit.org/challenge/music-retrieval/genres</a>). In this competition, the objective was to develop a predictive model for classifying music into six categories. In total, there were 12,495 music samples for which 191 characteristics were determined. All predictors were continuous; many were highly correlated and the predictors spanned different scales of measurement. This data collection was created using 60 performers from which 15–20 pieces of music were selected for each performer. Then 20 segments of each piece were parameterized in order to create the final data set. Hence, the samples are inherently not independent of each other.</p>
 <pre class="r"><code>library(readr)
 genres &lt;- read_csv(&quot;https://raw.githubusercontent.com/natelangholz/stat412-advancedregression/master/week-7/problem-set-3/genresTrain.csv&quot;)</code></pre>
-<pre><code>## Parsed with column specification:
-## cols(
-##   .default = col_double(),
-##   GENRE = col_character()
-## )</code></pre>
-<pre><code>## See spec(...) for full column specifications.</code></pre>
 </div>
 <div id="section" class="section level3">
 <h3>1</h3>
-<p><strong>Random Forest</strong>: Fit a random forest model using both CART trees and conditional inference trees to the music genre predictors. Do you have any difficulty on the full data set?</p>
+<p><strong>Random Forest</strong>: Fit a random forest model using both CART trees and conditional inference trees to the music genre predictors. What are the differences in the models? Do you have any difficulty on the full data set?</p>
+<p>Use the cforest function in the party package to fit a random forest model using conditional inference trees. The party package function varimp can calculate predictor importance.</p>
 </div>
 <div id="section-1" class="section level3">
 <h3>2</h3>
@@ -146,21 +141,47 @@ genres &lt;- read_csv(&quot;https://raw.githubusercontent.com/natelangholz/stat4
 <p><strong>Variable Importance</strong>: Create a variable importance plot from you best model. What features are most important?</p>
 <hr />
 </div>
-<div id="pulling-punches-part-2" class="section level3">
-<h3>Pulling Punches Part 2</h3>
-<p>The two <code>.Rdata</code> files under week 7 come as an abbreviated version of punch profiles from a boxing system to measure acceleration of boxers during live fights. The <code>profiles</code> list from the first file below has each individual punch profile which has a list item being a 3 column data frame of time (in ms around the middle of the punch event), acceleration in x (forward-back in g’s), and acceleration in y (side-to-side in g’s). Also attached are some other fields which are of less importance and contribute to this being a somewhat messy data set.</p>
-<pre class="r"><code>#load(file = 'week-4/punch_profiles.Rdata')
-#load(file = 'week-4/punch_types.Rdata')</code></pre>
-<p>There are 2135 labeled punch profiles each with a labeled punch type. Use the <code>punch_types</code> data frame as ground truth for punch type (labeled 1-6) in addition to the boxers stance (orthodox or southpaw), and punching head (right or left). The punch types are below.</p>
-<pre class="r"><code>###### PUNCH TYPES</code></pre>
+<div id="simulated-data" class="section level3">
+<h3>Simulated data</h3>
+<p>Friedman introduced several benchmark data sets create by simulation. One of these simulations used the following nonlinear equation to create data:</p>
+<p><span class="math display">\[y = 10\sin(πx_1x_2)+20(x_3 −0.5)^2 +10x_4 +5x_5 +N(0,σ^2)\]</span> where the x values are random variables uniformly distributed between [0, 1] (there are also 5 other non-informative variables also created in the simulation). The package mlbench contains a function called <code>mlbench.friedman1</code> that simulates these data</p>
+<pre class="r"><code>library(mlbench)
+set.seed(200)
+simulated &lt;- mlbench.friedman1(200, sd = 1)
+simulated &lt;- cbind(simulated$x, simulated$y)
+simulated &lt;- as.data.frame(simulated)
+colnames(simulated)[ncol(simulated)] &lt;- &quot;y&quot;</code></pre>
 </div>
 <div id="section-3" class="section level3">
-<h3>6</h3>
-<p><strong>Classification</strong>: Use features created from your problem set 2 to classify <code>punches</code> vs <code>non-punches</code> first just using a logistic regression.</p>
+<h3>4</h3>
+<p><strong>Random Forest and Variable Importance</strong>: Fit a random forest model to all of the predictors, then estimate the variable importance scores. Did the random forest model significantly use the uninformative predictors (V6 – V10)?</p>
 </div>
 <div id="section-4" class="section level3">
+<h3>5</h3>
+<p><strong>Correlated Predictor</strong>:Now add an additional predictor that is highly correlated with one of the informative predictors. For example:</p>
+<pre class="r"><code>simulated$duplicate1 &lt;- simulated$V1 + rnorm(200) * .1
+cor(simulated$duplicate1, simulated$V1)</code></pre>
+<pre><code>## [1] 0.9409437</code></pre>
+<p>Fit another random forest model to these data. Did the importance score for V1 change? What happens when you add another predictor that is also highly correlated with V1?</p>
+</div>
+<div id="section-5" class="section level3">
+<h3>6</h3>
+<p><strong>Gradient Boosted Machine</strong>: Repeat the process in 5 and 6 with different tree models, such as boosted trees. Does the same pattern occur?</p>
+</div>
+<div id="pulling-punches-part-2" class="section level3">
+<h3>Pulling Punches Part 2</h3>
+<p>The two <code>.Rdata</code> files under week 7 come as an abbreviated version of punch profiles from a boxing system to measure acceleration of boxers during live fights. The <code>gridded</code> list from the second file below has each individual punch profile which has a list item being a 3 column data frame of time (in ms around the middle of the punch event), acceleration in x (forward-back in g’s), and acceleration in y (side-to-side in g’s). Also attached are some other fields which are of less importance and contribute to this being a somewhat messy data set.</p>
+<pre class="r"><code>#load(file = 'week-7/problem-set-3/boxer_features_and_force.Rdata')
+#load(file = 'week-7/problem-set-3/force_punch_profiles.Rdata')</code></pre>
+<p>There are 1000 punch profiles each with an associated force (in Newtons) and boxer who threw the punch. Use the <code>ff</code> data frame as ground truth for punch force (variable =<code>force</code>) in addition to the rest of the boxer information. Other boxer information included variables around their size to be a proxy for ‘effective mass’.</p>
+</div>
+<div id="section-6" class="section level3">
 <h3>7</h3>
-<p><strong>Classification improved</strong> Now try a few different models through the <code>caret</code> package and different data splitting techniques to compare. Which model performs the best?</p>
+<p><strong>Estimations</strong>: Use features (and/or new features) created from your problem set 2 to estimate punch force using a MARS model. Use RMSE as your error estimate</p>
+</div>
+<div id="section-7" class="section level3">
+<h3>8</h3>
+<p><strong>Estimations improved</strong> Now try a few different (gbm, randomForest) models through the <code>caret</code> package and different data splitting techniques to compare. Comparing RMSE which model performs the best?</p>
 </div>
 
 
