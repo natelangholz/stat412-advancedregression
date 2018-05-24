@@ -53,7 +53,19 @@ dispersiontest(glm.fit, trafo=1)
  
 Overdispersion occurs when the observed variance is higher than the variance of a theoretical model. In the Poisson distribution, the variance is equal to the mean which means there is only one free parameter. In the case of simple parametric models such as the Poisson, overdispersion is more likely to occur.
 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+**Comment from AD**
+Equidispersion is an assumption made whenever we fit a model with the Poisson distribution.  The observed data need not conform to these assumptions.  We are likely to find evidence of under or over dispersion when we model data that is not well-explained by the Poisson model. 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
 The `AER` package in R provides a test for overdispersion by taking advantage of the fact that in a Poisson distribution the mean is equal to the variance. The null hypothesis of the test is simply that the $Var(Y) = \mu$, versus the alternative that $Var(Y) = \mu + \alpha*f(\mu)$. The null hypothesis is then therefore that $\alpha = 0$, and the alternative is that $\alpha \neq 0$. $\alpha \gt 0$ would imply overdispersion, and $\alpha \lt 0$ would imply underdispersion. Here we clearly see evidence of overdispersion with an estimated alpha of 42.8295, which corresponds to a p-value of essentially 0.
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+**Comment from AD**
+Good.
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 
 ### 2
 **Estimate Extension**: Extend the model to include pre-treatment measures of the outcome and the additional pre-treatment variables included in the dataset. Does the model fit well? Is there evidence of overdispersion?
@@ -77,6 +89,12 @@ dispersiontest(glm.fit.2, trafo=1)
 ```
   
 We again observe overdispersion, this time with an estimated alpha of 28.65146, which corresponds to a p-value of essentially 0.
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+**Comment from AD**
+Good.
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
   
 ### 3
 **Overdispersion**: Fit an overdispersed (quasi-)Poisson model. Fit a negative binomial model. Compare the models to previous two you have fit. Finally, what do you conclude regarding effectiveness of the intervention?
@@ -96,6 +114,12 @@ summary(nb.fit)
 The negative binomial model also allows the mean and variance to differ (this time in accordance to the the negative binomial distribution). The relationship can be defined as $Var(Y) = \mu * (1 + K\mu)$, where $K$ is the shape parameter of the negatve binomial distribution.
 
 In all cases, we see that both the treatments apear to have a statistically significant effect, at the $\alpha = .10$ level of significance, on the count of unprotected sex acts (with the "Couples" treatment for the negative binomial model as the only exception at the $\alpha = .05$ level of significance). Both effects are negative, with talking to women alone appearing to be the most effective.
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+**Comment from AD**
+Good.
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
   
 ### 4
 **Hurdle Model?**: Fit a hurdle model to this data. This is a classic data set for Poisson regression and overdispersion...i'm honestly curious if the hurdle model makes sense and improves over any of the other previous models you have built. Also compare rootograms for all.
@@ -119,10 +143,22 @@ AIC(hurdle.fit)
 
 We can see from the rootograms that the Poisson model has clear overdispersion and underestimates the 0s quite a bit. Meanwhile, the hurdle model gets the number of 0s correct, but then has problems with the rest of the distribution. The negative binomial model appears to be the Goldilocks of the group, which is also supported by having the lowest AIC.
 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+**Comment from AD**
+What about hurdle model with a negative binomial in place of the Poisson?  Would this improve the fit?
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
 ### 5
 **Assumptions**: These data include responses from both men and women from the participating couples. Does this give you any concern?
 
 The responses are likely (hopefully...) not independent of each other. In a sense, it is sort of like matched pair data, and the standard errors, at the least, should probably be adjusted.
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+**Comment from AD**
+Haha ... good.
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 
   * * *
   
@@ -213,6 +249,12 @@ points(V3 ~ V2, data = profLong[V1==150,])
 
 The spline smooths out the profile to hopefully allow the model to see big picture patterns. More knots could be added to reduce the smoothing and fit each profile better, but this would add to the model complexity and perhaps overfit each profile.
 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+**Comment from AD**
+This is cool.  Do you think the spline parameters have an interpretation that is meaningfull for boxing?  How might these measures correlate with Force and velocity measures?
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
 ### 7
 **Multinomial Model** Fit a multinomial model to estimate each of the punch types. Which of the punch types have the most difficulty in being separated?
 
@@ -236,6 +278,12 @@ prop.table(table(features[,49], features[,48]), margin=2)
 
 Crosses and jabs were predicted very well using the multinomial (about 94% and 95% accuracy, respectively), hooks were pretty well predicted (almost 83% accuracy), while upper cuts appeared to have some trouble (only about 31% accuracy, while over 54% of the actual hooks were incorrectly defined as upper cuts). Overall, the accuracy is roughly 88% ((461 + 615 + 775 + 26) / 2,135).
 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+**Comment from AD**
+Good.  What types of features might improve your ability to deteect upper cuts?
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
 ### 8
 **Logistic Regression** Consider bucketing the punches into two groups (straights and hooks). Are you able to improve accuracy in any way?
 
@@ -252,4 +300,10 @@ prop.table(table(glm.fit$fitted.values>.5, bucket), margin=2)
 ```
 
 Bucketing crosses and jabs together, and hooks and upper cuts together, we are able to get a 90.5% ((1,241 + 692) / 2,135) accuracy in distinguishing between the two. While this is good, and slightly better than the overall accuracy of the multinomial, crosses and jabs were already individually correctly classified in the multinomial around 95% of the time. Upper cuts was the major problem, but even then when they were incorrectly classified it was usually as a hook anyways, so it does not appear to add much value for the loss in detail.
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+**Comment from AD**
+Good.
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 
