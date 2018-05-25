@@ -1,8 +1,7 @@
 ################################################################################
 ###Case Study: Predicting Caravan Policy Ownership
 
-install.packages("DWD", repos="http://R-Forge.R-project.org")
-#library(DWD)
+library(kernlab)
 data(ticdata)
 
 ### Some of the predictor names and levels have characters that would results in
