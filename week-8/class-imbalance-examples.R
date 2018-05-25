@@ -1,7 +1,8 @@
 ################################################################################
 ###Case Study: Predicting Caravan Policy Ownership
 
-library(DWD)
+install.packages("DWD", repos="http://R-Forge.R-project.org")
+#library(DWD)
 data(ticdata)
 
 ### Some of the predictor names and levels have characters that would results in
@@ -345,94 +346,3 @@ xyplot(lift(CARAVAN ~ RF + RFdownInt + RFsmote,
        ylab = "%Events Found",
        xlab =  "%Customers Evaluated")
 
-
-################################################################################
-###  Cost–Sensitive Training
-
-library(kernlab)
-
-set.seed(1157)
-sigma <- sigest(CARAVAN ~ ., data = trainingInd[, noNZVSet], frac = .75)
-names(sigma) <- NULL
-
-svmGrid1 <- data.frame(sigma = sigma[2],
-                       C = 2^c(2:10))
-
-set.seed(1401)
-svmFit <- train(CARAVAN ~ .,
-                data = trainingInd[, noNZVSet],
-                method = "svmRadial",
-                tuneGrid = svmGrid1,
-                preProc = c("center", "scale"),
-                metric = "Kappa",
-                trControl = ctrl)
-svmFit
-
-evalResults$SVM <- predict(svmFit, evaluationInd[, noNZVSet], type = "prob")[,1]
-testResults$SVM <- predict(svmFit, testingInd[, noNZVSet], type = "prob")[,1]
-svmROC <- roc(evalResults$CARAVAN, evalResults$SVM,
-              levels = rev(levels(evalResults$CARAVAN)))
-svmROC
-
-svmTestROC <- roc(testResults$CARAVAN, testResults$SVM,
-                  levels = rev(levels(testResults$CARAVAN)))
-svmTestROC
-
-confusionMatrix(predict(svmFit, evaluationInd[, noNZVSet]), evalResults$CARAVAN)
-
-confusionMatrix(predict(svmFit, testingInd[, noNZVSet]), testingInd$CARAVAN)
-
-
-set.seed(1401)
-svmWtFit <- train(CARAVAN ~ .,
-                  data = trainingInd[, noNZVSet],
-                  method = "svmRadial",
-                  tuneGrid = svmGrid1,
-                  preProc = c("center", "scale"),
-                  metric = "Kappa",
-                  class.weights = c(insurance = 18, noinsurance = 1),
-                  trControl = ctrlNoProb)
-svmWtFit
-
-svmWtEvalCM <- confusionMatrix(predict(svmWtFit, evaluationInd[, noNZVSet]), evalResults$CARAVAN)
-svmWtEvalCM
-
-svmWtTestCM <- confusionMatrix(predict(svmWtFit, testingInd[, noNZVSet]), testingInd$CARAVAN)
-svmWtTestCM
-
-
-initialRpart <- rpart(CARAVAN ~ ., data = training,
-                      control = rpart.control(cp = 0.0001))
-rpartGrid <- data.frame(cp = initialRpart$cptable[, "CP"])
-
-cmat <- list(loss = matrix(c(0, 1, 20, 0), ncol = 2))
-set.seed(1401)
-cartWMod <- train(x = training[,predictors],
-                  y = training$CARAVAN,
-                  method = "rpart",
-                  trControl = ctrlNoProb,
-                  tuneGrid = rpartGrid,
-                  metric = "Kappa",
-                  parms = cmat)
-cartWMod
-
-
-library(C50)
-c5Grid <- expand.grid(model = c("tree", "rules"),
-                      trials = c(1, (1:10)*10),
-                      winnow = FALSE)
-
-finalCost <- matrix(c(0, 20, 1, 0), ncol = 2)
-rownames(finalCost) <- colnames(finalCost) <- levels(training$CARAVAN)
-set.seed(1401)
-C5CostFit <- train(training[, predictors],
-                   training$CARAVAN,
-                   method = "C5.0",
-                   metric = "Kappa",
-                   tuneGrid = c5Grid,
-                   cost = finalCost,
-                   control = C5.0Control(earlyStopping = FALSE),
-                   trControl = ctrlNoProb)
-
-C5CostCM <- confusionMatrix(predict(C5CostFit, testing), testing$CARAVAN)
-C5CostCM

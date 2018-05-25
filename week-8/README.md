@@ -1,8 +1,8 @@
 Week 8. 
 
-[Slides]()
+[Slides](https://github.com/natelangholz/stat412-advancedregression/blob/master/week-8/slides-week-8.pdf)
 
-[Optimization Slides]()
+[Optimization Slides](https://github.com/natelangholz/stat412-advancedregression/blob/master/week-8/optimization-slides.pdf)
 
 [Traveling Salesman Youtube](https://www.youtube.com/watch?v=SC5CX8drAtU)
 
