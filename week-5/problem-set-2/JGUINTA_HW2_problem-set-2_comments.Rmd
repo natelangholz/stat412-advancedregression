@@ -1,0 +1,619 @@
+---
+  output: 
+  html_document: 
+  highlight: pygments
+---
+
+```{r echo=FALSE}
+	#Remove Objects
+	rm(list=ls())
+
+	#Clear Memory
+	gc(reset=TRUE)
+	
+	#Set Working Directory
+	#setwd("C:/Users/jguinta/Desktop/Working/005_GradSchool/003_Course/STAT412/HW2/")
+	setwd("//chi1fls02/tsp/LosAngeles/Admin/001_Users/jjg/STAT412/HW2/")
+	
+	#Package Install
+	require(grid)			#Plotting utilities
+	require(gridExtra)		#Plotting utilities	
+	require(tidyverse)		#All things tidy 
+	require(data.table)		#Data table is better
+	require(dtplyr)			#Make sure Data table and dplyr work together
+	require(ggplot2)		#Graphing Utilities
+	require(stringr)		#String Functions
+	require(reshape2)		#Data Reshape
+	require(h2o)			  #h2o Machine Learning
+	require(knitr)
+	require(GGally)
+	require(broom)
+	require(MASS)
+	library(countreg)
+
+	#Set Options
+	options(scipen=20)
+	options(warn=-1)
+	
+	#Graphic Themes
+		out_theme <- theme_bw() + 
+		  theme(panel.grid.major=element_line(color="white"), 
+				text=element_text(family="ArialMT"), 
+				legend.position="bottom",
+				plot.title = element_text(size = rel(1.0)),
+				axis.text.x = element_text(size= rel(1.0)),
+				axis.text.y = element_text(size= rel(1.0)))
+				
+		color_scheme <- c("#6495ED", "#C90E17", "#001933", "#691b14", "#08519c", "#778899", "#B0C4DE", 
+							  "#999999", "#000000",  "#800000", "#B23232")   	
+	
+
+```
+  
+  
+### Risky Behavior
+  The data `risky_behaviors.dta` is from a randomized experiment that targeted couples at high risk of HIV infection. Counseling sessions were provided to the treatment group regarding practices that could reduce their likelihood of contracting HIV. Couples were randomized either to a control group, a group in which just the woman participated, or a group in which both members of the couple participated. The response variable to be examined after three months was “number of unprotected sex acts.”
+
+```{r}
+library(foreign)
+rb <- read.dta("http://www.stat.columbia.edu/~gelman/arm/examples/risky.behavior/risky_behaviors.dta", convert.factors=TRUE)
+rb<-as.data.table(rb)
+rb[, fupacts:=round(fupacts,0)]
+rb[, bupacts:=round(bupacts,0)]
+```
+
+
+```{r echo=FALSE}
+knitr::kable(summary(rb))
+```
+
+
+```{r echo=FALSE}
+options(warn=-1)
+ggpairs(rb, upper=list(continuous="cor", combo="box", discrete="facetbar"), lower=list(continuous=wrap("smooth_loess", alpha = 0.05), combo="box", discrete="facetbar"))+out_theme
+options(warn=1)
+```
+
+### 1
+**Estimate**: Model this outcome as a function of treatment assignment using a Poisson regression. Does the model fit well? Is there evidence of overdispersion?
+
+```{r echo=FALSE}
+rb[, treat:=ifelse(couples==1, "Couple", ifelse(couples==0 & women_alone==0, "Control", ifelse(women_alone==1, "WomenAlone", NA)))]
+rb[, treat:=as.factor(treat)]
+mod1<-glm(fupacts~treat, data=rb, family="poisson")
+summary(mod1)
+```
+
+Yes, there is overdisperson.  The Residual deviance is not one-to-one with the Residual deviance degrees of freedom.  This suggests that the model is poorly fit and that the true variance is greater than what is predicted by the model. 
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+**Comment from AD**
+Good.  Nice Visualizations.  Check out https://www.sciencedirect.com/science/article/pii/030440769090014K for an explanation of another test for violations to equidispersion. You could try this package for questions two and three.
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+### 2
+**Estimate Extension**: Extend the model to include pre-treatment measures of the outcome and the additional pre-treatment variables included in the dataset. Does the model fit well? Is there evidence of overdispersion?
+
+```{r echo=FALSE}
+mod2<-glm(fupacts~treat+bupacts+sex+bs_hiv, data=rb, family="poisson")
+summary(mod2)
+```
+
+The model is better, but there is still overdisperson.  The Residual deviance is not one-to-one with the Residual deviance degrees of freedom.  
+
+### 3
+  **Overdispersion**: Fit an overdispersed (quasi-)Poisson model. Fit a negative binomial model. Compare the models to previous two you have fit. Finally, what do you conclude regarding effectiveness of the intervention?
+  
+
+```{r echo=FALSE}
+mod3<-glm(fupacts~treat+bupacts+sex+bs_hiv, data=rb, family="quasipoisson")
+summary(mod3)
+```
+
+```{r echo=FALSE}
+mod4<-glm.nb(fupacts~treat+bupacts+sex+bs_hiv, data=rb)
+summary(mod4)
+```
+
+The quasi-possion model is still very over-dispersed, but the negative binomial model seems to fit much better.  The Residual Deviance is very close to the Residual degrees of freedom.  This suggest a better fitting model.
+
+The negative binomial model appears to fit well and suggests that when Women Alone receives the intervention the number of unprotected sex acts 3 months after intervention would decrease by -0.72 instances as compared to the control.  Compared to the control, Couples intervention suggested a decrease by -0.35 instances. 
+
+Although the treatments led to declines, on average, and are statistically significance, the magnitude of the decline does not appear to be large. 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+**Comment from AD**
+Good. 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  
+### 4
+  **Hurdle Model?**: Fit a hurdle model to this data. This is a classic data set for Poisson regression and overdispersion...i'm honestly curious if the hurdle model makes sense and improves over any of the other previous models you have built. Also compare rootograms for all. 
+  
+```{r echo=TRUE}
+mod5 <- hurdle(fupacts~treat+bupacts+sex+bs_hiv, data = rb, dist = "poisson", zero.dist = "binomial")
+summary(mod5)
+mod6 <- hurdle(fupacts~treat+bupacts+sex+bs_hiv, data = rb, dist = "negbin", zero.dist = "binomial")
+summary(mod6)
+```
+
+```{r echo=TRUE}
+#Poisson - Simple
+rootogram(mod1, max = 80)
+```
+
+
+The Poisson rootogram shows that the Poisson model misses significantly almost at every instance.
+
+
+```{r echo=TRUE}
+#Poisson - Complex
+rootogram(mod2, max = 80)
+```
+
+The complex Poisson rootogram shows that the Poisson model misses significantly almost at every instance.
+
+
+```{r echo=TRUE}
+#Quasi-Poisson
+#rootogram(mod3, max = 80)  #Kicked an error
+```
+
+Rootograms does not appear be compatible with quasi-poisson models
+
+
+```{r echo=TRUE}
+#Negative Binomial
+rootogram(mod4, max = 80)
+```
+
+
+The negative binomial rootogram shows that this model is more precise in predicting the counts.  This is determined by looking how close each bar is compared to the solid line at zero.
+
+```{r echo=TRUE}
+#Hurdle with Poisson
+rootogram(mod5, max = 80)
+```
+
+The poisson plus hurdle rootogram shows that this model gets the correct answer at the zero count threshold.  After that, the rootogram shows the same defects as the original Poisson.  The Poisson model does a poor job of predicting the count.
+
+```{r echo=TRUE}
+#Hurdle with Negative Binomial
+rootogram(mod6, max = 80)
+```
+  
+The hurdle plus negative binomial rootogram shows that this model is more precise in predicting the counts than the the other models.  The hurdle gets the right answer at the zero threshold.  The rest of rootogram is fairly similar to the original negative binomial model.
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+**Comment from AD**
+Good.  What would happen if we ran a hurdle model with a negative binomial rather than a Poisson in the second step?
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+### 5
+**Assumptions**: These data include responses from both men and women from the participating couples. Does this give you any concern?
+
+The potential for couples answers to be related.  An instance of an unprotected sex act for a man in the couple **could** be the same unprotected sex act for the women in the couple.  This could cause a potential issue of double-counting unprotected sex acts in the final data.
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+**Comment from AD**
+Good.
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+
+  * * *
+  
+### Pulling Punches
+
+The two `.Rdata` files under week 4 come as an abbreviated version of punch profiles from a boxing system to measure acceleration of boxers during live fights. The `profiles` list from the first file below has each individual punch profile which has a list item being a 3 column data frame of time (in ms around the middle of the punch event), acceleration in x (forward-back in g's), and acceleration in y (side-to-side in g's). Also attached are some other fields which are of less importance and contribute to this being a somewhat messy data set.
+
+```{r two, eval = FALSE}
+#load(file = 'week-4/punch_profiles.Rdata')
+#load(file = 'week-4/punch_types.Rdata')
+
+```
+
+There are 2135 labeled punch profiles each with a labeled punch type. Use the `punch_types` data frame as ground truth for punch type (labeled 1-6) in addition to the boxers stance (orthodox or southpaw), and punching head (right or left). The punch types are below.
+
+```{r}
+###### PUNCH TYPES
+#1 - Cross
+#2 - Hook
+#3 - Jab
+#4 - Upper Cut
+#5 - Overhand (shouldn't be any of these)
+#6 - Unknown (shouldn't be any of these)
+```
+
+
+```{r echo=FALSE}
+punch_raw<-as.data.table(readRDS(file="./punch_raw.rds"))
+```
+
+### 6
+**Features**: Create at least 10 new features from the punch profiles. They can be combinations of x and y acceleration or individually from either. Explain how these features have been constructed.
+
+This data is extremely disorganized and difficult to work with.  Extensive processing was conducted to take the `r length(unique(punch_raw$event)) ` list objects contained within the punch_profiles.RData data file to construct a starting point dataset of `r nrow(punch_raw)` records.
+
+The first step took each of the indivdual list objects within the punch_profiles.RData data and extracted the x and y columns into individual data frames. Then, a numeric identifier called "event" (which ranged from 1 to 2,135) was added to each individual data frame of x and y values in the order in which each list object was extracted from punch_profiles.RData. Last, the information from punch_types.RData was added onto the x and y data by using the "event" field created for the punch_profiles.RData data. An "event" field was also created on the punch_types.RData object by using the row order value of each record.  The starting point data is as follows:
+
+```{r echo=FALSE}
+tbl<-as.data.table(punch_raw)
+tbl[, x:=round(x,4)]
+tbl[, y:=round(y,4)]
+tbl[, beg:=round(x,1)]
+tbl[, fin:=round(y,1)]
+
+knitr::kable(tbl[1:10,], format.args=list(big.mark=","), row.names=FALSE)
+```
+
+
+ord - The millisecond order of each event.  This variable ranged from `r min(as.numeric(as.character(punch_raw$ord)))` to `r max(as.numeric(as.character(punch_raw$ord)))` per event.
+
+x - x acceleration (forward and back)
+
+y - y acceleration (side-to-side)
+
+beg - Numerical value of the start of a gap in the readings
+
+fin - Numerical values of the end of a gap in the readings
+
+event - Numeric value that ranges from `r min(punch_raw$event)` to `r max(punch_raw$event)`.  Each value represents a series of x, y readings for a single event. 
+
+box_names - The name (or numeric identifier) of the boxer recorded during the event.
+
+pt - Punch Type. This variable ranges from `r min(as.numeric(as.character(punch_raw$pt)))` to `r max(as.numeric(as.character(punch_raw$pt)))`. 
+
+***Please see script 001_mk_data.r (Attached) for the complete script used to process the data.***
+
+From this data, the following features were constructed to model the data. The data was sliced into pre-peak (typically ord less than 0), post-peak (ord greater than 0), and peak (typically the largest x or y value).  The purpose of these features is to measure peak x, peak y, pre-peak x, pre-peak y, post-peak x, and post-peak y values to construct distance and time of the punch at different phases.
+
+###Feature 1 - Max x, Max y, Min x, Min y
+
+By event the minimum and maximum x and y values after the data is filtered to ord values between -250 and 250.
+
+###Feature 2 - Max x,y when ord is less than 0; Min x,y when ord is less than 0
+
+By event the minimum and maximum x and y values after the data is filtered to ord values between -250 and 0 (exclusive) 
+
+###Feature 3 - Max x,y when ord is greater than 0; Min x,y when ord is greater than 0 and x and y are positive.
+
+By event the minimum and maximum x and y values after the data is filtered to ord values between 0 and 100 (exclusive) 
+
+###Feature 4 - Total Time, in Milliseconds, for the punch in x
+
+By event, the difference between ord value when the x value is the minimum x value when ord is between -250 and 0 and the ord value when the x value is the minimum x value when ord is between 0 and 100.  
+
+###Feature 5 - Total Time, in Milliseconds, for the punch in y
+
+By event, the difference between ord value when the y value is the minimum y value when ord is between -250 and 0 and the ord value when the y value is the minimum y value when ord is between 0 and 100.  
+
+###Feature 6 - Total Time, in Milliseconds, to impact in x
+
+By event, the difference between ord value when the x value is the minimum x value when ord is between -250 and 0 and the ord value when the x value is the maximum x value.
+
+###Feature 7 - Total Time, in Milliseconds, to impact in y
+
+By event, the difference between ord value when the y value is the minimum y value when ord is between -250 and 0 and the ord value when the y value is the maximum y value.
+
+###Feature 8 - Total Distance in x
+
+By event, the difference between the minimum x value when ord is between -250 and 0 and positive and the minimum x value when order is between 0 and 100 and positive.
+
+###Feature 9 - Total Distance in y
+
+By event, the difference between the minimum y value when ord is between -250 and 0 and positive and the minimum y value when order is between 0 and 100 and positive.
+
+###Feature 10 - Average x, y during the punch
+
+By event, the average x, when ord is between -50 and 50 and x is positive. By event, the average y, when ord is between -50 and 50 and y is positive.
+
+###Feature 11 - Median x, y during the punch 
+
+By event, the median x, when ord is between -50 and 50 and x is positive. By event, the median y, when ord is between -50 and 50 and y is positive.
+
+### Other Features - Thought of, but not implemented
+
+1. The sum of x, y from the start of the punch to the peak.
+2. The sum of x, y from the start of the punch to the end of the punch.
+3. Newtons of force 
+4. Speed of the punch 
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+**Comment from AD**
+Good.
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+***Please see script 002_mk_feat.r (Attached) for the complete script used to process the data.***
+
+```{r echo=FALSE}
+feat<-as.data.table(readRDS("./feat.rds"))
+tbl<-feat
+lst<-c( "mnx"        ,"mny"          ,"mxx_ordls0" ,"mxy_ordls0"   ,"mnx_ordls0"
+        ,"mny_ordls0" ,"mxx_ordgt0"   ,"mnx_ordgt0" ,"mxy_ordgt0"   ,"mny_ordgt0"
+        ,"tot_tm_x"   ,"tot_tm_imp_x" ,"tot_tm_y"   ,"tot_tm_imp_y" ,"tot_dis_x" 
+        ,"tot_dis_y"  ,"avgx"         ,"medx"       ,"avgy"         ,"medy")
+
+for (i in lst) {
+  tbl[, (i):=round(get(i), 4)]
+}
+
+knitr::kable(tbl[1:10,], format.args=list(big.mark=","), row.names=FALSE)
+
+```
+
+### 7
+**Multinomial Model** Fit a multinomial model to estimate each of the punch types. Which of the punch types have the most difficulty in being separated?
+
+Please note that h2o was used for the modeling process. 
+
+Please see documentation here for more information: (http://h2o-release.s3.amazonaws.com/h2o/rel-lambert/5/docs-website/Ruser/top.html)
+
+h2o is an auto ML platform that allows the user to generate hundreds of models using dozens of algorithms.  For this assignment, three different algorithms were used: 
+
+1. Generalized Linear Models (Multinomial)
+2. Gradient Boosted Machines (Multinomial) (Nor required, but curious)
+3. Neural Net (Not required, but curious)
+
+##1. Generalized Linear Model (Multinomial)
+
+```{r echo=FALSE}
+setwd("C:/h2o")
+h2o.init(nthreads = 1)
+load(file="C:/h2o/003_model_paths.h2o")
+glm1<-h2o.loadModel(glm1_best_save)
+glm1_conf_matrix<-h2o.confusionMatrix(glm1)
+```
+
+All features developed above and "hand," "stance," and "boxer" were modeled against punch type ("pt").  Using h2o GLM functionality, all interactions among all variables were also included in the model.  In total `r length(h2o.coef(glm1)$names)` variables were included in the model.  h2o also allowed for regularization parameters to conduct models using Ridge and LASSO penalties.  The following function calls were used to create the glm model.
+
+###Function Call
+
+h2o.grid(algorithm = "glm", 
+
+							x = xnames, y = "pt_label", 
+							
+							training_frame = feat,
+							
+							hyper_params = hyper_params_glm,
+							
+							search_criteria = search_criteria,
+							
+							stopping_metric = "mean_per_class_error", stopping_tolerance = 1e-3, 
+							
+							stopping_rounds = 3,
+							
+							seed = 1,
+							
+							nfolds = 5, fold_assignment = "Modulo", 
+							
+							keep_cross_validation_predictions = TRUE,
+							
+							family = "multinomial",
+							
+							lambda_search=TRUE,
+							
+							interactions=interaction_list
+							
+							)
+							
+							
+###Search Criteria
+
+search_criteria <- list(
+		  strategy = "RandomDiscrete",
+		  
+		  max_runtime_secs = 7200,  #2 hours per run
+		  
+		  max_models = 500
+		  
+		)
+		
+###Hyper Tuning 
+
+hyper_params_glm <- list(
+
+		  alpha = c(0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1) #0.0 is Ridge, 1.0 is LASSO
+		  
+)
+
+###Results
+
+The GLM results were pretty good.  In total, there was a `r round(100*(last(glm1_conf_matrix$Error)),0)`% error rate.  However, Upper Cuts were nearly impossible to predict accurately. This is likely due to there being few Upper Cuts in the data, and that there is no z-axis sensor.  Upper cuts could appear to be similar to jabs and crosses. 
+
+```{r echo=FALSE}
+glm1_conf_matrix
+```
+
+##2. Gradient Boosted Machines
+
+```{r echo=FALSE}
+setwd("C:/h2o")
+load(file="C:/h2o/003_model_paths.h2o")
+gbm1<-h2o.loadModel(gbm1_best_save)
+gbm1_conf_matrix<-h2o.confusionMatrix(gbm1)
+```
+
+The Gradient Boosted Machines performed exceptionally well on this data.  It acheived an error rate of `r round(100*(last(gbm1_conf_matrix$Error)),0)`%. However, considering that this process was not performed in a typical training and testing environment, there is no determination of true prediction accuracy. 
+
+```{r echo=FALSE}
+gbm1_conf_matrix
+```
+
+##3. Neural Net
+
+```{r echo=FALSE}
+setwd("C:/h2o")
+load(file="C:/h2o/003_model_paths.h2o")
+nn1<-h2o.loadModel(nn1_best_save)
+nn1_conf_matrix<-h2o.confusionMatrix(nn1)
+```
+
+The Neural Net approach actually performed reasonably well, but not as well as the Gradient Boost Machine.  Even with limited amounts of data, this algorithm had an error rate of `r round(100*(last(nn1_conf_matrix$Error)),0)`%. However, considering that this process was not performed in a typical training and testing environment, there is no determination of true prediction accuracy. 
+
+```{r echo=FALSE}
+nn1_conf_matrix
+```
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+**Comment from AD**
+This is an interesting compairson.  Why do we see such drastic variance in the error rates for upper cuts (aside from the small sample size)?  What types of featues could improve the predictive accuracy?
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+### 8
+**Logistic Regression** Consider bucketing the punches into two groups (straights and hooks). Are you able to improve accuracy in any way?
+
+According to http://www.boxingschool.co.uk/punch-types.html, punch types of "Cross" and "Jab" are considered "Straight" punches, and punch type of "Hook" is considered a "Hook."  There was no consistent information on whether or not an "Upper Cut" is considered a "Straight" or "Hook" punch.  For purposes of this assignment, "Upper Cut" was classified as a "Hook" punch.
+
+```{r echo=FALSE}
+feat<-readRDS("./feat.rds")
+feat[, pt_label_new:=ifelse(pt==1, "Straight", ifelse(pt==2, "Hook", ifelse(pt==3, "Straight", ifelse(pt==4, "Hook", NA)))),]
+feat[, pt_label:=ifelse(pt==1, "Cross", ifelse(pt==2, "Hook", ifelse(pt==3, "Jab", ifelse(pt==4, "Upper Cut", NA)))),]
+
+tbl<-feat[, .N, by=list(pt_label, pt_label_new)][order(pt_label_new, pt_label)]
+knitr::kable(tbl, format.args=list(big.mark=","), row.names=FALSE)
+```
+
+After reclassifying the punch type into a binomial ("Straight", "Hook"), the following algorithms were run on the data.
+
+1. Generalized Linear Model (Binomial)
+2. Gradient Boosted Machine 
+3. Neural Net
+
+##1. Generalized Linear Model (Multinomial)
+
+```{r echo=FALSE}
+setwd("C:/h2o")
+load(file="C:/h2o/004_model_paths.h2o")
+glm2<-h2o.loadModel(glm2_best_save)
+glm2_conf_matrix<-h2o.confusionMatrix(glm2)
+```
+
+All features developed above and "hand," "stance," and "boxer" were modeled against punch type ("pt").  Using h2o GLM functionality, all interactions among all variables were also included in the model.  In total `r length(h2o.coef(glm1)$names)` variables were included in the model.  h2o also allowed for regularization parameters to conduct models using Ridge and LASSO penalties.  The following function calls were used to create the glm model.
+
+###Function Call
+
+h2o.grid(algorithm = "glm", 
+
+							x = xnames, y = "pt_label", 
+							
+							training_frame = feat,
+							
+							hyper_params = hyper_params_glm,
+							
+							search_criteria = search_criteria,
+							
+							stopping_metric = "AUC", stopping_tolerance = 1e-3, 
+							
+							stopping_rounds = 3,
+							
+							seed = 1,
+							
+							nfolds = 5, fold_assignment = "Modulo", 
+							
+							keep_cross_validation_predictions = TRUE,
+							
+							family = "binomial",
+							
+							lambda_search=TRUE,
+							
+							interactions=interaction_list
+							
+							)
+							
+###Search Criteria
+
+search_criteria <- list(
+
+		  strategy = "RandomDiscrete",
+		  
+		  max_runtime_secs = 7200,  #2 hours per run
+		  
+		  max_models = 500
+		  
+		)
+		
+###Hyper Tuning 
+
+hyper_params_glm <- list(
+
+		  alpha = c(0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1) #0.0 is Ridge, 1.0 is LASSO
+		  
+)
+
+###Results
+
+The GLM results were pretty good.  In total, there was a `r round(100*(last(glm2_conf_matrix$Error)),0)`% error rate.  This is an improvement in  accuracy over the multinomial model by `r round(100*(last(glm1_conf_matrix$Error)),0)-round(100*(last(glm2_conf_matrix$Error)),0)`%.
+
+```{r echo=FALSE}
+glm2_conf_matrix
+```
+
+The GLM results for the binomial improved as compared to the multinomial model.
+
+##2. Gradient Boosted Machines
+
+```{r echo=FALSE}
+setwd("C:/h2o")
+load(file="C:/h2o/004_model_paths.h2o")
+gbm2<-h2o.loadModel(gbm2_best_save)
+gbm2_conf_matrix<-h2o.confusionMatrix(gbm2)
+```
+
+The Gradient Boosted Machines performed ok on this data.  It acheived an error rate of `r round(100*(last(gbm2_conf_matrix$Error)),0)`%. This is worse than its multinomial counterpart. Additionally, considering that this process was not performed in a typical training and testing environment, there is no determination of true prediction accuracy. 
+
+```{r echo=FALSE}
+gbm2_conf_matrix
+```
+
+The GBM shows highly accurate results. However, the results are slightly worse than then the multinomial model.
+
+##3. Neural Net
+
+```{r echo=FALSE}
+setwd("C:/h2o")
+load(file="C:/h2o/004_model_paths.h2o")
+nn2<-h2o.loadModel(nn2_best_save)
+nn2_conf_matrix<-h2o.confusionMatrix(nn2)
+```
+
+The Neural Net was better than the multinomial model. This algorithm had an error rate of `r round(100*(last(nn2_conf_matrix$Error)),0)`%, which was considerably better than its multinomial counterpart.
+
+```{r echo=FALSE}
+nn2_conf_matrix
+```
+
+The ROCR comparison for all three models.
+
+```{r echo=FALSE}
+setwd("//chi1fls02/tsp/LosAngeles/Admin/001_Users/jjg/STAT412/HW2/")
+load(file="./graph2_rocr.rda")
+rocr_graph
+```
+
+
+All of the models perform very well.  Gradient Boosted Machines is the best, followed up Neural Nets and then GLM.  However, since these are is training set curves, these results are not true indicators of prediction accuracy. 
+
+```{r echo=FALSE}
+AUC_NN<-as.data.table(nn2@model$training_metrics@metrics$AUC)
+AUC_NN[, type:="Neural Net - AUC"]
+AUC_GBM<-as.data.table(gbm2@model$training_metrics@metrics$AUC)
+AUC_GBM[, type:="Gradient Boosted Machine - AUC"]
+AUC_GLM<-as.data.table(glm2@model$training_metrics@metrics$AUC)
+AUC_GLM[, type:="Generalized Linear Model - AUC"]
+
+tbl<-as.data.table(rbind(AUC_GLM, AUC_GBM, AUC_NN))
+tbl<-tbl[, .(type, AUC=round(V1,3))]
+tbl
+```
+
+As mentioned above the models appear to be perform very well, but since these are training set AUC, these results are not true indicators of prediction accuracy
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+**Comment from AD**
+Good.
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
