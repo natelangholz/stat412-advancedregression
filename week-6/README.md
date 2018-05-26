@@ -1,4 +1,4 @@
-Thinking about overfitting and tree models...maybe
+Thinking about overfitting, cross validation, and using the caret package. 
 
 [Slides](https://github.com/natelangholz/stat412-advancedregression/blob/master/week-6/slides-week-6.pdf)
 
