@@ -1,8 +1,7 @@
 ################################################################################
 ###Case Study: Predicting Caravan Policy Ownership
 
-install.packages("DWD", repos="http://R-Forge.R-project.org")
-#library(DWD)
+library(kernlab)
 data(ticdata)
 
 ### Some of the predictor names and levels have characters that would results in
@@ -201,21 +200,6 @@ plot(rfROC, print.thres = c(.5, .3, .10, rfThresh), type = "S",
      print.thres.pattern = "%.3f (Spec = %.2f, Sens = %.2f)",
      print.thres.cex = .8, legacy.axes = TRUE)
 
-################################################################################
-### Adjusting Prior Probabilities
-
-priors <- table(ticdata$CARAVAN)/nrow(ticdata)*100
-fdaPriors <- fdaFit
-fdaPriors$finalModel$prior <- c(insurance = .6, noinsurance =  .4)
-fdaPriorPred <- predict(fdaPriors, evaluation[,predictors])
-evalResults$FDAprior <-  predict(fdaPriors, evaluation[,predictors], type = "prob")[,1]
-testResults$FDAprior <-  predict(fdaPriors, testing[,predictors], type = "prob")[,1]
-fdaPriorCM <- confusionMatrix(fdaPriorPred, evaluation$CARAVAN)
-fdaPriorCM
-
-fdaPriorROC <- roc(testResults$CARAVAN, testResults$FDAprior,
-                   levels = rev(levels(testResults$CARAVAN)))
-fdaPriorROC
 
 ################################################################################
 ### Sampling Methods
