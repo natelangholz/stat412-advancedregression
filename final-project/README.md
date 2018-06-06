@@ -8,9 +8,12 @@
 
 The MAS 412 final project will be this Kaggle competition to predict the number of upvotes a New York Times article comment will receive. This estimation will be a tool that can give us a gauge on public opinion. The response variable will be `recommendations` in the training/testing `comments` file.
 
-Submissions for the final project will be live until June 4, 2018 at 11:59 pm. 
+Submissions for the final project will be live until June 6, 2018 at 11:59 pm. 
 
-There is also a presentation component that will happen final class period for 10 minutes each. 
+There is also a presentation component that will happen final class period for 8-10 minutes each. No more or no less. 
+
+A final report with exploratory data analysis, methodology, and results is also due. 
+
 
 -----
 There has been some trouble creating submission...write commentID as a double through the tidyverse. Not sure why base R commands aren't doing the same thing.
