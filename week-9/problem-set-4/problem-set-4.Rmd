@@ -5,6 +5,9 @@
 ---
 
 
+
+This problem set is just a few problems for the last few lectures. For interest only. 
+
   
 ### Traveling Salesperson Problem
  Write a simulated annealer for the TSP on the 16 cities defined below. Use Euclidean distance as the tour distance you are trying to minimize. (Note: the solution space has `(16 - 1)!/2 = 653,837,184,000$ tours.)`

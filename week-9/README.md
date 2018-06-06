@@ -1,4 +1,4 @@
-Week 9.
+Week 9. There is a problem set 4 available now more for you own interest. 
 
 [Slides](https://github.com/natelangholz/stat412-advancedregression/blob/master/week-9/slides-week-9.pdf)
 
