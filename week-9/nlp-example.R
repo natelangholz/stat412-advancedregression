@@ -149,7 +149,6 @@ sh_topchar <- ungroup(sh_topchar)
 sh_topchar %>% filter(id %in% c(1, 45)) %>%
   print(n = Inf)
 
-## ---- eval = FALSE-------------------------------------------------------
 ## sh_tokens %>%
 ##   group_by(id) %>%
 ##   mutate(percentage_loc = sid / max(sid)) %>%
@@ -157,7 +156,6 @@ sh_topchar %>% filter(id %in% c(1, 45)) %>%
 ##   ggplot(aes(percentage_loc, id)) +
 ##     geom_point()
 
-## ---- echo = FALSE-------------------------------------------------------
 sh_tokens %>%
   group_by(id) %>%
   mutate(percentage_loc = sid / max(sid)) %>%
@@ -174,7 +172,6 @@ sh_theme <- sh_tokens %>%
   top_n(n = 10, n) %>%
   left_join(sh_meta, by = "id")
 
-## ---- echo = FALSE-------------------------------------------------------
 sh_theme <- ungroup(sh_theme)
 
 ## ------------------------------------------------------------------------

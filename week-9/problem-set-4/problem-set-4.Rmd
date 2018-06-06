@@ -1,0 +1,51 @@
+---
+  output: 
+  html_document: 
+  highlight: pygments
+---
+
+
+  
+### Traveling Salesperson Problem
+ Write a simulated annealer for the TSP on the 16 cities defined below. Use Euclidean distance as the tour distance you are trying to minimize. (Note: the solution space has `(16 - 1)!/2 = 653,837,184,000$ tours.)`
+ 
+`city1 = (12,12), city2 = (18,23), city3 = (24,21),`
+
+`city4 = (29,25), city5 = (31,52), city6 = (36,43),`
+
+ `city7 = (37,14), city8 = (42,8),  city9 = (51,47),`
+ 
+ `city10 = (62,53),  city11 = (63,19),  city12 = (69,39),`
+ 
+ `city13 = (81,7),  city14 = (82,18),  city15 = (83,40),`
+ 
+  `city16 = (88,30).`
+
+### 1
+**Simulated Annealing**: Find the minimum tour distance given the 16 cities.
+
+
+### 2
+**Many Tours**: Run your code 100 times for 500 iterations to give you 100 different minimum tours. Your chain will likely get stuck in a local minimum in some of your chains. Provide the mean minimum tour distance as well as summary statistics of those 100 tours. 
+
+
+  * * *
+  
+### Genetic Algorithm
+A tourist wants take a trip on the weekend with his friends. They will go to the mountains to see the wonders of nature, so he needs to pack well for the trip. He has a good knapsack for carrying things, but knows that he can carry a maximum of only 4kg in it and it will have to last the whole day. He creates a list of what he wants to bring for the trip but the total weight of all items is too much. He then decides to add columns to his initial list detailing their weights and a numerical value representing how important the item is for the trip. The tourist can choose to take any combination of items from the list, but only one of each item is available. He may not cut or diminish the items, so he can only take whole units of any item.
+
+### 3
+**GA Optimization**:  Which items does the tourist carry in his knapsack so that the total weight does not exceed 400 dag [4 kg], and their total value is maximized? Use the genetic algorithm to pick the items for his knapsack. The list of items, weight in dag, and value are posted to github.
+
+
+  * * *
+  
+### NLP State of the Union
+Following the example of NLP classification in the last lecture use the data from the presidential State of the Union Addressess to answer the following questions. 
+
+### 4
+**Republican or Democrat Classification**:Take all State of the Union Addressess from 1982 to the present. Build a classifier that detects whether the speech is given by a Democrat or Republican.
+
+### 5
+**Model Performance**:How well does this model perform? Are any years or presidents particularly difficult to classify?
+
